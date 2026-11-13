@@ -120,6 +120,10 @@ input[type=color] { width: 38px; height: 30px; border: 1px solid var(--line); bo
 .m-kachel.getrennt .m-bild { opacity: .35; }
 .m-kachel.fehler { border-color: var(--rot2); }
 .m-warn { font-size: 12px; color: var(--rot2); padding: 0 6px 6px; line-height: 1.25; }
+/* Sätze zum Gegenlesen (Text mit Zeit, Anhören, Weglassen) */
+.s-satz { flex-wrap: nowrap; align-items: flex-start; }
+.s-satz .s-feld { flex: 1; min-width: 0; resize: vertical; }
+.s-satz .s-zeit { min-width: 38px; padding-top: 9px; font-variant-numeric: tabular-nums; }
 .liste-eintrag { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); margin-bottom: 5px; cursor: pointer; }
 .liste-eintrag:hover { border-color: var(--line2); } .liste-eintrag.an { border-color: var(--gelb); }
 .liste-eintrag .n { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; } .liste-eintrag small { color: var(--tx3); }

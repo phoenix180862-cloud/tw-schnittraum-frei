@@ -115,7 +115,7 @@ function legeMedium(id, zeitpunkt, still = false) {
   if (m.art === 'ton') {
     const hatMusik = Z.p.ton.some(a => a.rolle === 'musik');
     const start = zeitpunkt != null ? zeitpunkt : (!hatMusik || vor.zeit() >= Z.lay.dauer - 0.2 ? 0 : vor.zeit());
-    const a = neuerTon(m, start, m.herkunft === 'aufnahme' ? 'sprecher' : 'musik');
+    const a = neuerTon(m, start, m.herkunft === 'aufnahme' || m.herkunft === 'ki-sprecher' ? 'sprecher' : 'musik');
     aendere((p) => { p.ton.push(a); }, !still);
     waehle({ art: 'ton', id: a.id });
     return;
