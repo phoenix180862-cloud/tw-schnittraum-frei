@@ -1,0 +1,38 @@
+{
+ "titel": "Musik, Sprecher und Schalter",
+ "dauer": 57,
+ "kapitel": [
+  {
+   "t": 1.87,
+   "text": "Musik holst du wie ein Video und legst sie mit Als Musik unter den Film. Sie bekommt eine eigene Spur."
+  },
+  {
+   "t": 11.1,
+   "text": "Oder du nimmst Musik von der App. Sie entsteht hier im Gerät, gehört niemandem, und du darfst sie überall verwenden."
+  },
+  {
+   "t": 19.61,
+   "text": "Zum Nachvertonen tippst du auf Aufnahme starten. Der Film läuft, und du sprichst dazu ins Mikrofon."
+  },
+  {
+   "t": 32.35,
+   "text": "Nach Aufnahme beenden liegt dein Text in der Spur Sprecher."
+  },
+  {
+   "t": 37.39,
+   "text": "Unter Schalter findest du alle Zusatzfunktionen. Sie sind aus, bis du sie einschaltest."
+  },
+  {
+   "t": 44.06,
+   "text": "Zum Beispiel einen Vorspann mit deinem Titel,"
+  },
+  {
+   "t": 48.64,
+   "text": "einen Abspann mit deinem Schlusswort,"
+  },
+  {
+   "t": 52.24,
+   "text": "oder die Musik, die von selbst leiser wird, sobald du sprichst."
+  }
+ ]
+}

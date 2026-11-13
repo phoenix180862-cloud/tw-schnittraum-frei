@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hilfe – TW Schnittraum</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="img/icon-192.png">
+<link rel="stylesheet" href="schriften/schriften.css">
+<script>(function(){try{var t=localStorage.getItem("twsr.thema");if(t)document.documentElement.dataset.thema=t;}catch(e){}})();</script>
+<script src="frei-config.js"></script>
+<style>
+  :root { --bg: #0f1923; --bg2: #1a2a3c; --bg3: #223448; --line: #2e4562; --tx: #e8ecf1; --tx2: #b7c5d6; --tx3: #94a5bd; --rot: #c41e1e; --rot2: #f76e6a; --gelb: #facc15; --blau: #4da6ff; color-scheme: dark; }
+  :root[data-thema="hell"] { --bg: #e9eef4; --bg2: #ffffff; --bg3: #f4f7fa; --line: #ccd6e2; --tx: #14202b; --tx2: #3d4f61; --tx3: #4e6072; --rot2: #c41e1e; --gelb: #b98a00; --blau: #1667c2; color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--tx); font: 16px/1.55 "Source Sans 3", "Segoe UI", Arial, sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; padding: 12px 18px; background: linear-gradient(180deg, var(--bg2), var(--bg)); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  header .logo { background: #111; border-radius: 6px; padding: 4px 8px; display: flex; } header .logo img { height: 26px; width: auto; display: block; }
+  header h1 { font: 600 21px "Oswald", sans-serif; margin: 0; letter-spacing: .4px; flex: 1; } header h1 b { color: var(--rot2); font-weight: 600; }
+  main { max-width: 760px; margin: 0 auto; padding: 8px 18px 60px; }
+  h2 { font: 600 20px "Oswald", sans-serif; letter-spacing: .4px; margin: 30px 0 8px; padding-top: 6px; border-top: 1px solid var(--line); } h2:first-of-type { border-top: 0; }
+  h3 { font: 600 16.5px "Oswald", sans-serif; letter-spacing: .3px; margin: 18px 0 6px; }
+  h2 span { color: var(--rot2); margin-right: 6px; }
+  p, li { color: var(--tx2); } b { color: var(--tx); }
+  ol, ul { padding-left: 22px; margin: 6px 0; } li { margin: 4px 0; }
+  .inhalt { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 4px; }
+  .inhalt a { color: var(--tx2); text-decoration: none; border: 1px solid var(--line); border-radius: 99px; padding: 5px 13px; background: var(--bg2); min-height: 36px; display: inline-flex; align-items: center; }
+  .inhalt a:hover { color: var(--tx); border-color: var(--tx3); }
+  .kasten { background: var(--bg2); border: 1px solid var(--line); border-left: 3px solid var(--gelb); border-radius: 8px; padding: 10px 14px; margin: 12px 0; } .kasten p { margin: 4px 0; }
+  .kasten.blau { border-left-color: var(--blau); }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; } td { padding: 6px 8px; border-bottom: 1px solid var(--line); color: var(--tx2); vertical-align: top; } td:first-child { white-space: nowrap; width: 38%; color: var(--tx); }
+  kbd { background: var(--bg2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 7px; font: inherit; font-size: 14px; }
+  a { color: var(--blau); }
+  .klein { font-size: 14px; color: var(--tx3); }
+  #filme { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); margin: 10px 0; }
+  #filme figure { margin: 0; background: var(--bg2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; } #filme video { width: 100%; display: block; background: #000; aspect-ratio: 16 / 9; } #filme figcaption { padding: 7px 10px; font-weight: 600; }
+  .laut { display: flex; align-items: center; gap: 8px; margin: 8px 0; } .laut button { width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg2); color: var(--tx); font-size: 20px; cursor: pointer; } .laut input { flex: 1; max-width: 260px; accent-color: var(--rot); }
+  html:not(.tw-frei) .nur-frei { display: none !important; }
+  @media print { header { position: static; } body { background: #fff; color: #000; } p, li, td { color: #222; } }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo"><img src="img/tw-logo-original.png" alt="Thomas Willwacher Fliesenlegermeister e.K." width="1278" height="376"></span>
+  <h1>Schnitt<b>raum</b> · Hilfe</h1>
+</header>
+<main>
+  <nav class="inhalt" aria-label="Inhalt">
+    <a href="#start">Erste Schritte</a><a href="#quellen">Videos holen</a><a href="#schnitt">Schneiden</a><a href="#bild">Bild &amp; Farbe</a><a href="#text">Text</a><a href="#ton">Ton &amp; Sprecher</a><a href="#schalter">Schalter</a><a href="#untertitel">Untertitel</a><a class="nur-frei" href="#rohschnitt">Schneller Rohschnitt</a><a href="#ausgabe">Ausgeben &amp; Teilen</a><a href="#handy">Am Handy</a><a href="#tasten">Tasten</a><a href="#wissen">Gut zu wissen</a><a href="#ueber">Über die App</a>
+  </nav>
+
+  <p class="klein">Zum Ausdrucken: <a href="hilfe/TW-Schnittraum-Handbuch.pdf" target="_blank" rel="noopener">Handbuch als PDF</a> · Was kann dieses Gerät? <a href="geraet.html">Gerät prüfen</a></p>
+
+  <section id="filmeTeil" hidden>
+    <h2><span>▶</span>Kurze Erklärfilme</h2>
+    <div class="laut"><button id="leiser" aria-label="Leiser">−</button><input id="lautst" type="range" min="0" max="1" step="0.05" value="0.8" aria-label="Lautstärke"><button id="lauter" aria-label="Lauter">＋</button><span class="klein">Lautstärke</span></div>
+    <div id="filme"></div>
+  </section>
+
+  <h2 id="start"><span>1</span>Erste Schritte</h2>
+  <ol>
+    <li><b>Videos holen:</b> Links auf <b>„＋ Videos, Fotos, Musik holen“</b> tippen oder die Dateien einfach aus dem Explorer ins Fenster ziehen. Direkt darunter steht die Zeile <b>„Woher?“</b> mit den kurzen Wegen: Ordner, Handy – siehe <a href="#quellen">Videos holen</a>.</li>
+    <li><b>In den Film legen:</b> In der Mediathek bei jedem Video auf <b>„＋ In den Film“</b> tippen. Die Clips reihen sich unten in der Zeitleiste hintereinander.</li>
+    <li><b>Ansehen:</b> Mit dem roten Knopf <b>▶</b> oder der <kbd>Leertaste</kbd> abspielen und anhalten.</li>
+    <li><b>Anpassen:</b> Einen Clip in der Zeitleiste antippen – rechts erscheinen alle Einstellungen dazu.</li>
+    <li><b>Fertig:</b> Oben rechts <b>„⇪ Video ausgeben“</b> – die fertige Datei wird gespeichert.</li>
+  </ol>
+  <p>Oben in der Leiste wählst du das <b>Format</b>: <b>16:9 quer</b> für YouTube und Facebook, <b>9:16 hoch</b> für Reels, Shorts und Storys, <b>1:1</b> und <b>4:5</b> für Beiträge auf Instagram und Facebook. Das erste Video stellt das Format passend ein; du kannst es jederzeit umschalten.</p>
+
+  <h2 id="quellen"><span>2</span>Videos holen – alle Wege</h2>
+  <p>Unter dem Knopf „＋ Videos, Fotos, Musik holen“ steht die Zeile <b>„Woher?“</b>. Jeder Knopf dort ist ein direkter Weg zu deinen Aufnahmen – du musst nichts von Hand hin- und herkopieren.</p>
+  <table>
+    <tr><td><b>Ordner</b></td><td>Einen Ordner einmal verbinden – er bleibt als Quelle gemerkt. Die App zeigt darin die <b>neuesten</b> Videos, Fotos und Tondateien zuerst; was seit dem letzten Mal dazugekommen ist, trägt das Zeichen „neu“. Mehrere antippen, dann „übernehmen“. Die Dateien bleiben, wo sie sind. Gut dafür: der Kamera-Ordner des Handys, ein Ordner von „Google Drive für den Desktop“, Kamera-Karte, USB-Stick, Netzlaufwerk.</td></tr>
+    <tr><td><b>Handy · Tablet</b> <span class="klein">(am PC)</span></td><td><b>Ohne Kabel:</b> Ist das Handy über „Smartphone-Link“ (bei Samsung: „Link zu Windows“) mit dem PC verbunden, kann Windows es wie einen Ordner zeigen. Einmalig in Windows unter <b>Einstellungen › Bluetooth und Geräte › Mobile Geräte › Geräte verwalten</b> beim Handy den Schalter „… im Datei-Explorer anzeigen“ einschalten. Dann „Ordner des Handys verbinden“ antippen, links das Handy wählen und <b>„DCIM“ › „Camera“</b> öffnen. Ab jetzt stehen neue Aufnahmen hier, sobald du sie gemacht hast.<br><b>Mit Kabel:</b> Handy anstecken, am Handy „Dateien übertragen“ wählen und die Videos unter „Dieser PC“ beim Handy auswählen.</td></tr>
+
+    <tr><td><b>Galerie</b> <span class="klein">(Handy, Tablet)</span></td><td>Alle Fotos und Videos des Geräts: Kamera, Screenshots, WhatsApp, Downloads – so, wie du sie aus der Galerie kennst.</td></tr>
+    <tr><td><b>Eigene Dateien · SD-Karte</b> <span class="klein">(Handy, Tablet)</span></td><td>Öffnet die Datei-Auswahl des Geräts: interner Speicher, <b>Speicherkarte</b>, <b>USB-Stick</b>, OneDrive, Google Drive, Netzwerkspeicher – alles, was dort eingerichtet ist. Über das Menü oben links wechselst du zwischen den Speichern.</td></tr>
+    <tr><td><b>Aufnehmen</b> <span class="klein">(Handy, Tablet)</span></td><td>Startet die Kamera – das Video landet nach der Aufnahme gleich im Schnittraum.</td></tr>
+  </table>
+  <p><b>Am Handy und Tablet</b> fragt der große Knopf „Videos, Fotos, Musik holen“ zuerst <b>„Woher sollen die Videos kommen?“</b> – Galerie, Eigene Dateien mit SD-Karte und USB, Aufnehmen, Musik und Ton, Ordner verbinden. Einfach antippen.</p>
+  <p><b>Hineinziehen:</b> Du kannst Dateien <b>und ganze Ordner</b> mit der Maus in den Schnittraum ziehen – aus dem Explorer, vom USB-Stick, von der Speicherkarte, vom Netzlaufwerk oder vom verbundenen Handy. Loslassen geht überall im Fenster; das gestrichelte Feld <b>„Hierher ziehen“</b> unter „Medien“ erinnert daran. Ziehst du auf die Zeitleiste, liegt das Video gleich im Film. Aus einem Ordner nimmt die App alle Videos, Fotos und Tondateien (auch aus Unterordnern) in der Reihenfolge der Aufnahme. Am Tablet geht das im geteilten Bildschirm auch aus der Galerie oder aus „Eigene Dateien“. Nur aus einer Internetseite heraus lässt sich nichts hineinziehen.</p>
+  <p><b>Noch kürzere Wege:</b></p>
+  <ul>
+    <li><b>Teilen</b> (Handy): Ist der Schnittraum als App eingerichtet, erscheint er in Google Fotos, in der Galerie und im Dateimanager unter „Teilen“. Video wählen, „Teilen“, „Schnittraum“ – fertig.</li>
+    <li><b>Öffnen mit</b> (PC): Ist der Schnittraum als App eingerichtet, kannst du ein Video im Explorer mit der rechten Maustaste über „Öffnen mit“ direkt in den Schnittraum geben.</li>
+    <li><b>Quick Share</b> (Samsung): In der Galerie „Teilen“ › „Quick Share“ und den PC wählen. Die Datei liegt dann am PC unter „Downloads“ › „Quick Share“ – diesen Ordner kannst du als Quelle verbinden.</li>
+    <li><b>Einfügen</b>: ein kopiertes Bild mit <kbd>Strg</kbd>+<kbd>V</kbd> einfügen.</li>
+  </ul>
+  <div class="kasten blau"><p><b>Verweis oder Kopie?</b> Aus einem Ordner nimmt die App nur einen <b>Verweis</b> – die Datei bleibt, wo sie ist, und braucht keinen zweiten Platz. Alles, was es nur vorübergehend gibt (aus „Teilen“, der Galerie des Handys), holt die App als <b>Kopie in die App</b>. Diese Kopien sind nach einem Neustart sofort wieder da. Nimmst du so eine Datei aus der Mediathek, wird die Kopie entfernt; das Original in der Galerie bleibt.</p></div>
+  <div class="kasten"><p>Die Ordner „Downloads“, „Dokumente“ und „Desktop“ selbst lassen sich aus Sicherheitsgründen des Browsers nicht als Quelle verbinden – ein Unterordner darin schon.</p></div>
+
+  <h2 id="schnitt"><span>3</span>Schneiden</h2>
+  <ul>
+    <li><b>Kürzen:</b> In der Zeitleiste den <b>linken oder rechten Rand</b> eines Clips anfassen und ziehen. Die Vorschau zeigt dabei das neue erste bzw. letzte Bild.</li>
+    <li><b>Teilen:</b> Den roten Abspielzeiger an die Stelle setzen (ins Lineal klicken) und <b>„✂ Teilen“</b> drücken oder Taste <kbd>S</kbd>. Den Teil, der weg soll, antippen und <b>„✕ Entfernen“</b>.</li>
+    <li><b>Umsortieren:</b> Einen Clip in der Mitte anfassen und nach links oder rechts ziehen – der gelbe Strich zeigt, wo er landet.</li>
+    <li><b>Verdoppeln:</b> Clip antippen, dann <b>„⧉ Verdoppeln“</b>.</li>
+    <li><b>Übergänge:</b> Clip antippen, rechts unter <b>„Übergang davor“</b> wählen: Überblenden, über Schwarz, über Weiß, Schieben oder Wischen. Mit „Zwischen alle Clips setzen“ gilt er für den ganzen Film.</li>
+    <li><b>Zeitlupe und Zeitraffer:</b> Clip antippen, unter <b>„Tempo“</b> ¼× bis 4× wählen.</li>
+    <li><b>Fotos:</b> Fotos werden wie Clips eingefügt; die Standzeit stellst du rechts ein. „Langsam heranfahren“ bringt Bewegung ins Bild.</li>
+    <li><b>Rückgängig:</b> Oben die Pfeile ↶ ↷ oder <kbd>Strg</kbd>+<kbd>Z</kbd>. Es kann nichts kaputtgehen – deine Originalvideos werden nie verändert.</li>
+  </ul>
+
+  <h2 id="bild"><span>4</span>Bild und Farbe</h2>
+  <ul>
+    <li><b>Stil mit einem Tipp:</b> Natürlich, Kräftig, Warm, Kühl, Baustelle klar, Matt, Schwarzweiß, Alt, Kino.</li>
+    <li><b>Feineinstellung:</b> Helligkeit, Kontrast, Farbkraft, Kalt ↔ Warm, Randschatten, Weichzeichnen, Sepia. Ein Doppelklick auf die Beschriftung stellt einen Regler zurück.</li>
+    <li><b>Bildausschnitt:</b> „Bild füllen“ (Ränder werden abgeschnitten) oder „Ganz zeigen“ (der Rand wird unscharf oder schwarz aufgefüllt). Mit Zoom vergrößern und den Ausschnitt in der Vorschau mit der Maus verschieben. Drehen und Spiegeln gibt es auch.</li>
+    <li><b>Ein- und Ausblenden:</b> Lässt Bild und Ton eines Clips weich aus dem Schwarz kommen oder dorthin gehen.</li>
+    <li>„Auf alle Clips übertragen“ gibt dem ganzen Film dieselbe Farbstimmung.</li>
+  </ul>
+
+  <h2 id="text"><span>5</span>Text</h2>
+  <ul>
+    <li>Links den Reiter <b>„Text“</b> öffnen und eine Vorlage antippen: großer Titel, Zeile unten, rote Bauchbinde, Hinweis oben, Schreibschrift.</li>
+    <li>Rechts den Text eintippen, Schrift, Größe und Farbe wählen. Kontur, Schatten oder ein farbiger Kasten machen ihn auf jedem Bild lesbar.</li>
+    <li>Den Text in der <b>Vorschau anfassen und verschieben</b>. In der Zeitleiste bestimmst du, von wann bis wann er zu sehen ist.</li>
+    <li>Unter „Erscheinen“ wählst du, ob er einblendet, hochschiebt oder wie getippt erscheint.</li>
+  </ul>
+
+  <h2 id="ton"><span>6</span>Ton und Sprecher</h2>
+  <ul>
+    <li><b>Originalton:</b> Clip antippen – Lautstärke einstellen oder den Ton des Clips stumm schalten.</li>
+    <li><b>Musik:</b> Reiter „Ton“ » <b>„♪ Musik oder Ton holen“</b>. Die Musik liegt in einer eigenen Spur; an den Rändern kürzen, Lautstärke sowie Ein- und Ausblenden rechts einstellen.</li>
+    <li><b>Musik von der App:</b> Reiter „Ton“ » <b>„♫ Musik von der App“</b>. Die App macht die Musik selbst, hier im Gerät: Stimmung antippen (Ruhig, Heiter, Mit Schwung, Klavier), mit <b>„Anhören“</b> probehören, dann <b>„Unter den Film legen“</b>. Das Stück wird genau so lang wie dein Film und endet mit einem Schlussakkord; gefällt dir die Melodie nicht, nimm „Variante 2“ oder „Variante 3“.</li>
+    <li><b>Nachvertonen:</b> Abspielzeiger an den Anfang der Stelle setzen, Reiter „Ton“ » <b>„● Aufnahme starten“</b>. Der Film läuft, du sprichst ins Mikrofon. Mit <b>„■ Aufnahme beenden“</b> oder der <kbd>Leertaste</kbd> ist die Aufnahme in der Spur „Sprecher“.</li>
+    <li>Beim ersten Mal fragt der Browser, ob die Seite das <b>Mikrofon</b> verwenden darf – bitte erlauben.</li>
+  </ul>
+  <div class="kasten"><p><b>Musik und Rechte:</b> Für YouTube, Instagram und Facebook nur Musik verwenden, die du verwenden darfst (eigene oder lizenzfreie). Bekannte Lieder aus dem Radio werden dort stumm geschaltet oder das Video wird gesperrt – das gilt auch für Musik aus Spotify und anderen Abos: Die sind nur zum privaten Anhören erlaubt. <b>Die Musik von der App darfst du überall verwenden</b>, auch in Werbefilmen: Sie entsteht im Gerät, es steckt kein fremdes Stück darin, und sie kostet nichts.</p></div>
+
+  <h2 id="schalter"><span>7</span>Schalter – alles ein- und ausschaltbar</h2>
+  <p>Alle Zusatzfunktionen sind <b>aus</b>, bis du sie im Reiter <b>„Schalter“</b> einschaltest – für jeden Film getrennt:</p>
+  <ul>
+
+    <li><b>Vorspann / Abspann:</b> ruhige Titelkarte mit eigenen Zeilen.</li>
+    <li><b>Musik leiser, wenn gesprochen wird</b> und <b>Originalton leiser, wenn gesprochen wird.</b></li>
+    <li><b>Automatische Untertitel</b> und <b><span class="nur-frei">Schneller Rohschnitt</span></b> – siehe die nächsten beiden Abschnitte.</li>
+  </ul>
+
+  <h2 id="untertitel"><span>8</span>Automatische Untertitel</h2>
+  <p>Viele sehen Videos ohne Ton. Mit Untertiteln versteht man dich trotzdem.</p>
+  <ol>
+    <li>Reiter <b>„Schalter“</b> » <b>„Automatische Untertitel“</b> einschalten.</li>
+    <li><b>„▶ Sprache jetzt erkennen“</b> antippen. Beim ersten Mal lädt die App einmalig das Sprachmodell (rund 85 MB, am besten im WLAN) – danach geht es ohne Internet.</li>
+    <li>Die App liest, was in deinen Clips und Sprecher-Aufnahmen gesprochen wird, und setzt es als Text ins Bild. In der Zeitleiste erscheint dazu die Spur „Untertitel“.</li>
+    <li><b>Nachbessern:</b> Unter dem Schalter steht jede Zeile. Zeit antippen = hinspringen, Text antippen = ändern. Ein leeres Feld blendet die Zeile aus.</li>
+    <li><b>Aussehen:</b> Größe, Platz im Bild (unten, Mitte, oben), dunkler Kasten, Großbuchstaben.</li>
+  </ol>
+  <ul>
+    <li>Die Erkennung läuft <b>im Gerät</b> – dein Ton wird nirgendwohin geschickt. Erkannt wird <b>Deutsch</b>.</li>
+    <li>Die Untertitel hängen am Clip: Kürzt, teilst oder verschiebst du Clips, <b>wandern sie mit</b>. Kommt eine neue Stelle dazu, bietet der Schalter „Fehlende Stellen erkennen“ an.</li>
+    <li>Fachwörter und Namen versteht die Erkennung nicht immer<span class="nur-frei"> – unter dem Schalter besserst du jede Zeile von Hand nach</span>. </li>
+    <li>Bei Wind, Maschinenlärm oder Musik im Hintergrund wird die Erkennung ungenauer – eine ruhige Sprecher-Aufnahme (Reiter „Ton“) liefert die besten Untertitel.</li>
+  </ul>
+
+  <div class="nur-frei">
+  <h2 id="rohschnitt"><span>9</span>Schneller Rohschnitt</h2>
+  <p>Du hast viele Clips und wenig Zeit? Der schnelle Rohschnitt setzt einen ersten Film zusammen, den du danach verfeinerst.</p>
+  <ol>
+    <li>Reiter <b>„Schalter“</b> » <b>„Schneller Rohschnitt“</b> einschalten.</li>
+    <li>Länge antippen (15 Sekunden bis 3 Minuten) und wählen, woraus der Film entstehen soll: aus den Clips im Film oder aus der ganzen Mediathek.</li>
+    <li><b>„▶ Rohschnitt vorschlagen“</b>. Ein Fenster zeigt die Szenen: alle Clips in der Reihenfolge der Aufnahme, jeweils der mittlere Teil. Gesprochene Sätze bleiben ganz, wenn die Sprache schon erkannt ist.</li>
+    <li><b>Übernehmen</b>, hinten anhängen oder verwerfen. Mit „Rückgängig“ ist der alte Stand sofort wieder da.</li>
+  </ol>
+  </div>
+
+  <h2 id="ausgabe"><span>10</span>Video ausgeben und teilen</h2>
+  <ol>
+    <li>Oben rechts <b>„⇪ Video ausgeben“</b>.</li>
+    <li>Auflösung wählen – <b>Full HD</b> passt für alle Kanäle. Qualität „Hoch“ ist die richtige Wahl.</li>
+    <li><b>„Jetzt ausgeben“</b> und den Speicherort wählen. Die App rechnet den Film und zeigt, wie lange es noch dauert. Das Fenster solange offen lassen.</li>
+  </ol>
+  <ul>
+    <li><b>Am PC</b> wählst du den Speicherort selbst.</li>
+    <li><b>Am Handy und Tablet</b> landet die Datei bei den Downloads. Mit <b>„⤴ Teilen …“</b> gibst du sie direkt weiter: an YouTube, Instagram, Facebook, WhatsApp oder Google Drive – so, wie du es von Fotos kennst.</li>
+  </ul>
+  <p>Die Datei ist eine normale <b>MP4-Datei</b>, wie sie YouTube, Instagram und Facebook erwarten. Der Schnitt selbst bleibt erhalten – du kannst später weiterarbeiten und noch einmal in einem anderen Format ausgeben (z. B. erst quer für YouTube, dann hoch für ein Reel).</p>
+
+  <h2 id="handy"><span>11</span>Am Handy und Tablet</h2>
+  <p>Der Schnittraum läuft auch auf dem Handy. Dort stehen Vorschau, Zeitleiste und Werkzeuge untereinander und bleiben gleichzeitig im Bild.</p>
+  <ul>
+    <li><b>Antippen = wählen.</b> Erst den Clip antippen (gelber Rand), dann anfassen und ziehen.</li>
+    <li><b>Kürzen:</b> den gewählten Clip am linken oder rechten Rand ziehen. <b>Umsortieren:</b> in der Mitte anfassen und ziehen.</li>
+    <li><b>Blättern:</b> über die Zeitleiste wischen. Der Abspielzeiger folgt dem Finger im Lineal ganz oben.</li>
+    <li>Die Einstellungen zum gewählten Teil stehen im Reiter <b>„Einstellen“</b> – dort wählst du auch das Format.</li>
+    <li><b>Videos holen:</b> im Reiter „Medien“ über „Galerie“, „Eigene Dateien · SD-Karte“ oder „Aufnehmen“ – oder aus der Galerie über „Teilen“ direkt an den Schnittraum geben. Das gilt genauso am <b>Tablet</b>, auch wenn es die Seite wie ein PC anzeigt.</li>
+    <li>Als App einrichten: im Browser-Menü <b>„Zum Startbildschirm hinzufügen“</b> bzw. „App installieren“. Erst dann erscheint der Schnittraum unter „Teilen“.</li>
+  </ul>
+
+  <h2 id="tasten"><span>12</span>Tasten</h2>
+  <table>
+    <tr><td><kbd>Leertaste</kbd></td><td>Abspielen / Anhalten</td></tr>
+    <tr><td><kbd>S</kbd></td><td>Am Abspielzeiger teilen</td></tr>
+    <tr><td><kbd>Entf</kbd></td><td>Gewähltes aus dem Film nehmen</td></tr>
+    <tr><td><kbd>Strg</kbd>+<kbd>Z</kbd> / <kbd>Strg</kbd>+<kbd>Y</kbd></td><td>Rückgängig / Wiederholen</td></tr>
+    <tr><td><kbd>Strg</kbd>+<kbd>D</kbd></td><td>Gewähltes verdoppeln</td></tr>
+    <tr><td><kbd>Strg</kbd>+<kbd>V</kbd></td><td>Kopiertes Bild oder kopierte Datei einfügen</td></tr>
+    <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Ein Bild zurück / vor (mit <kbd>Umschalt</kbd>: eine Sekunde)</td></tr>
+    <tr><td><kbd>Pos1</kbd> / <kbd>Ende</kbd></td><td>Zum Anfang / zum Ende</td></tr>
+    <tr><td><kbd>+</kbd> / <kbd>−</kbd></td><td>Zeitleiste größer / kleiner (auch <kbd>Strg</kbd> + Mausrad)</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Auswahl aufheben, große Vorschau verlassen</td></tr>
+    <tr><td><kbd>F1</kbd></td><td>Diese Hilfe</td></tr>
+  </table>
+
+  <h2 id="wissen"><span>13</span>Gut zu wissen</h2>
+  <ul>
+    <li><b>Alles bleibt bei dir:</b> Videos, Fotos und Aufnahmen werden nirgendwohin hochgeladen. Geschnitten, gerechnet und die Sprache erkannt wird auf deinem Gerät.<span class="nur-frei"> Es gibt keine Anmeldung, keine Werbung und keine Auswertung.</span></li>
+
+    <li><b>Nach einem Neustart</b> fragt der Browser einmal, ob die App wieder auf deine Videodateien zugreifen darf – auf „Dateien wieder verbinden“ tippen und erlauben. Kopien in der App (aus „Teilen“, Galerie) sind ohne Nachfrage sofort wieder da.</li>
+    <li><b>Automatisch gesichert:</b> Jeder Schritt wird im Gerät gesichert. Unter dem Knopf mit dem Filmnamen (oben links) findest du alle deine Filme und kannst neue anlegen.</li>
+    <li><b>Video lässt sich nicht öffnen?</b> Neuere Handys speichern besonders platzsparend und in HDR (HEVC / „hohe Effizienz“). Ob dein Gerät das lesen kann, zeigt <a href="geraet.html">Gerät prüfen</a> in wenigen Sekunden. Wenn nicht: in den Kamera-Einstellungen des Handys die platzsparende Aufnahme und HDR-Video ausschalten – dann klappt es mit jedem neuen Video. Wirkt ein HDR-Video in der App etwas dunkler als am Handy, hilft der Regler „Helligkeit“ unter „Farbe“.</li>
+    <li><b>Am besten</b> läuft die App am PC in Chrome oder Edge.</li>
+    <li>Die App lässt sich als Programm einrichten: in der Adresszeile des Browsers auf das Symbol „App installieren“ tippen – dann hat sie ein eigenes Symbol auf dem Desktop.</li>
+  </ul>
+
+  <h2 id="ueber"><span>i</span>Über die App</h2>
+  <p><b>TW Schnittraum</b> <span id="fassung"></span> – ein Werkzeug von <b>Thomas Willwacher Fliesenlegermeister e.K.</b>, Nisterau. Schwimmbadbau, Großküchen, Abdichtung, Fliesen- und Plattenarbeiten.</p>
+  <p class="nur-frei">Diese Fassung ist ein <b>Geschenk</b>: kostenlos, ohne Anmeldung, ohne Werbung und ohne Wasserzeichen im fertigen Video. Sie ist eine Arbeitshilfe – ohne Gewähr. <a href="https://www.thomas-willwacher.de/" target="_blank" rel="noopener">www.thomas-willwacher.de</a> · <a href="https://www.thomas-willwacher.de/impressum.html" target="_blank" rel="noopener">Impressum</a> · <a href="https://www.thomas-willwacher.de/datenschutz.html" target="_blank" rel="noopener">Datenschutz</a> · Kontakt schriftlich per E-Mail (Adresse im Impressum).</p>
+  <p class="klein">Verwendete Bausteine (alle fest in der App, keine fremden Server): Mediabunny 1.65.2 (<a href="lib/lizenzen/Mediabunny-MPL-2.0.txt">MPL-2.0</a>) für das Lesen und Schreiben der Videodateien; bei Bedarf der AAC-Baustein @mediabunny/aac-encoder 1.65.2 (MPL-2.0) mit dem AAC-Encoder aus FFmpeg/libavcodec (<a href="lib/lizenzen/FFmpeg-COPYING.LGPLv2.1.txt">LGPL v2.1</a>, <a href="lib/lizenzen/FFmpeg-LICENSE.md">Hinweise</a>); Schriften Oswald, Source Sans 3, Montserrat, Bebas Neue, Playfair Display und Dancing Script (SIL Open Font License 1.1, Texte im Ordner <a href="schriften/LIZENZ-oswald.txt">schriften</a>); für die Spracherkennung im Gerät onnxruntime-web 1.31.1 von Microsoft (<a href="lib/lizenzen/onnxruntime-MIT.txt">MIT</a>) und das Sprachmodell Kroko-ASR Deutsch von Banafo (Community-Modell, CC BY-SA 4.0, <a href="lib/sprache/kroko-de/LIESMICH.txt">Hinweise</a>). Gesamtübersicht: <a href="LIZENZEN.txt">LIZENZEN.txt</a>.</p>
+</main>
+<script src="js/hilfe-videos.js" onerror="void 0"></script>
+<script>
+  fetch('index.html', { cache: 'no-store' }).then(r => r.text()).then(t => { const m = /name="tw-version" content="([^"]+)"/.exec(t); if (m) document.getElementById('fassung').textContent = 'Version ' + m[1]; }).catch(() => {});
+  (function () {
+    const liste = window.TW_HILFE_VIDEOS || []; if (!liste.length) return;
+    const teil = document.getElementById('filmeTeil'), feld = document.getElementById('filme'), regler = document.getElementById('lautst');
+    let laut = 0.8; try { laut = Number(localStorage.getItem('twsr.hilfeLaut') || 0.8); } catch (e) {}
+    const setze = (v) => { laut = Math.min(1, Math.max(0, v)); regler.value = laut; feld.querySelectorAll('video').forEach(f => { f.volume = laut; }); try { localStorage.setItem('twsr.hilfeLaut', laut); } catch (e) {} };
+    for (const v of liste) { const fig = document.createElement('figure'), f = document.createElement('video'), c = document.createElement('figcaption'); f.controls = true; f.preload = 'none'; f.src = 'hilfe/videos/' + v.id + '.mp4'; if (v.bild) f.poster = 'hilfe/videos/' + v.bild; f.addEventListener('play', () => feld.querySelectorAll('video').forEach(a => { if (a !== f) a.pause(); })); c.textContent = v.titel; fig.append(f, c); feld.append(fig); }
+    regler.addEventListener('input', () => setze(Number(regler.value))); document.getElementById('leiser').onclick = () => setze(laut - 0.1); document.getElementById('lauter').onclick = () => setze(laut + 0.1);
+    teil.hidden = false; setze(laut);
+  })();
+</script>
+</body>
+</html>

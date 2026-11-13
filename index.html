@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="tw-version" content="1.5.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TW Schnittraum</title>
+<meta name="description" content="TW Schnittraum – Handyvideos schneiden, vertonen, beschriften und für YouTube, Instagram und Facebook ausgeben. Alles bleibt auf dem Gerät.">
+<meta name="theme-color" content="#0f1923">
+<meta name="robots" content="noindex">
+<script type="importmap">{ "imports": { "mediabunny": "./lib/mediabunny.min.mjs" } }</script>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="stylesheet" href="schriften/schriften.css">
+<link rel="stylesheet" href="css/sr.css?v=1.5.0">
+<script>(function(){try{var t=localStorage.getItem("twsr.thema");if(t)document.documentElement.dataset.thema=t;}catch(e){}})();</script>
+<script src="frei-config.js?v=1.5.0"></script>
+<script defer src="lib/tw-version.js?v=1.5.0"></script>
+</head>
+<body>
+<header id="kopf">
+  <div class="marke-block">
+    <span class="logo-schild" title="Thomas Willwacher Fliesenlegermeister e.K."><img src="img/tw-logo-original.png" alt="Thomas Willwacher Fliesenlegermeister e.K." width="720" height="212"></span>
+    <span class="app-name">Schnitt<b>raum</b></span>
+    <span class="sr-version" data-tw-version></span>
+  </div>
+  <span class="umbruch" aria-hidden="true"></span>
+  <button class="btn" id="kProjekt" title="Projekte: öffnen, neu anlegen, umbenennen"><span class="sym">▤</span> <span id="kProjektName">Neues Video</span></button>
+  <div id="kFormat" role="group" aria-label="Bildformat"></div>
+  <button class="ib" id="kZurueck" title="Rückgängig (Strg+Z)" aria-label="Rückgängig">↶</button>
+  <button class="ib" id="kVor" title="Wiederholen (Strg+Y)" aria-label="Wiederholen">↷</button>
+  <span class="platz"></span>
+  <span class="gespeichert" id="kGespeichert" aria-live="polite"></span>
+  <button class="ib" id="kThema" title="Helles / dunkles Aussehen" aria-label="Helles oder dunkles Aussehen">◐</button>
+  <button class="btn gelb" id="kHilfe" title="Hilfe und Anleitung (F1)" aria-label="Hilfe">ⓘ<span class="lang"> Hilfe</span></button>
+  <button class="btn primaer" id="kAusgabe" title="Fertiges Video als Datei speichern">⇪ <span class="lang">Video ausgeben</span><span class="kurz">Ausgeben</span></button>
+</header>
+
+<div id="haupt">
+  <aside id="links">
+    <nav class="reiter" id="lReiter">
+      <button data-r="medien" class="an">Medien</button>
+      <button data-r="text">Text</button>
+      <button data-r="ton">Ton</button>
+      <button data-r="schalter">Schalter</button>
+      <button data-r="eig" class="nur-schmal">Einstellen</button>
+    </nav>
+    <div class="feld" id="lFeld"></div>
+  </aside>
+
+  <main id="buehne">
+    <div class="b-platz" id="bPlatz">
+      <canvas id="bild" width="960" height="540" aria-label="Vorschau des Videos"></canvas>
+      <div class="b-start" id="bStart">
+        <h2>Los geht’s</h2>
+        <p>Videos, Fotos, Musik oder gleich einen ganzen Ordner hierher ziehen – oder auswählen. Alles bleibt auf deinem Gerät.</p>
+        <button class="btn primaer gross" id="bHolen">＋ Videos und Fotos holen</button>
+        <p class="recht nur-frei">Ein Geschenk von Thomas Willwacher Fliesenlegermeister e.K. · <a href="https://www.thomas-willwacher.de/impressum.html" target="_blank" rel="noopener">Impressum</a> · <a href="https://www.thomas-willwacher.de/datenschutz.html" target="_blank" rel="noopener">Datenschutz</a></p>
+      </div>
+      <div class="b-hinweis" id="bHinweis" hidden></div>
+    </div>
+    <div class="b-leiste">
+      <button class="ib" id="tAnfang" title="Zum Anfang (Pos1)" aria-label="Zum Anfang">⏮</button>
+      <button class="ib" id="tBildZ" title="Ein Bild zurück (Pfeil links)" aria-label="Ein Bild zurück">◂</button>
+      <button class="btn spiel" id="tSpiel" title="Abspielen / Anhalten (Leertaste)" aria-label="Abspielen oder Anhalten">▶</button>
+      <button class="ib" id="tBildV" title="Ein Bild vor (Pfeil rechts)" aria-label="Ein Bild vor">▸</button>
+      <button class="ib" id="tEnde" title="Zum Ende (Ende)" aria-label="Zum Ende">⏭</button>
+      <span class="zeit" id="tZeit">0:00,0 / 0:00,0</span>
+      <span class="platz"></span>
+      <button class="ib" id="tVoll" title="Vorschau groß zeigen" aria-label="Vorschau groß zeigen">⛶</button>
+    </div>
+  </main>
+
+  <aside id="eig"></aside>
+
+  <section id="unten">
+    <div class="zl-leiste">
+      <button class="btn klein" id="zTeilen" title="Am Abspielzeiger teilen (S)">✂ Teilen</button>
+      <button class="btn klein" id="zDoppeln" title="Gewähltes verdoppeln (Strg+D)">⧉ Verdoppeln</button>
+      <button class="btn klein" id="zWeg" title="Gewähltes aus dem Film nehmen (Entf)">✕ Entfernen</button>
+      <span class="platz"></span>
+      <span class="hinweis" id="zInfo"></span>
+      <button class="ib" id="zKleiner" title="Zeitleiste verkleinern (−)" aria-label="Zeitleiste verkleinern">−</button>
+      <button class="btn klein" id="zAlles" title="Ganzen Film zeigen">Alles</button>
+      <button class="ib" id="zGroesser" title="Zeitleiste vergrößern (+)" aria-label="Zeitleiste vergrößern">＋</button>
+    </div>
+    <div id="zl"></div>
+  </section>
+</div>
+
+<div id="dropZone"><div><b>Hier loslassen</b><small>Videos, Fotos, Musik – einzelne Dateien oder ganze Ordner</small><small>Die Dateien bleiben auf deinem Gerät – es wird nichts hochgeladen.</small></div></div>
+<div id="meldungen" aria-live="polite"></div>
+<div id="dialoge"></div>
+<script type="module" src="js/app.js?v=1.5.0"></script>
+</body>
+</html>

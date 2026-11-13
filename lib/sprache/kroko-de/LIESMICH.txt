@@ -1,0 +1,11 @@
+Sprachmodell für die automatischen Untertitel im TW Schnittraum
+================================================================
+Modell:   Kroko-ASR Deutsch (Community-Modell), Streaming-Zipformer, Fassung 2025-08-06
+Urheber:  Banafo (Kroko-ASR) – https://huggingface.co/Banafo/Kroko-ASR
+Bezug:    sherpa-onnx, Paket „sherpa-onnx-streaming-zipformer-de-kroko-2025-08-06“
+          https://github.com/k2-fsa/sherpa-onnx/releases/tag/asr-models
+Lizenz:   CC BY-SA 4.0 (Namensnennung, Weitergabe unter gleichen Bedingungen) – Community-Modelle laut Kroko-ASR.
+          Vor einem Verkauf oder einer öffentlichen Geschenk-Fassung der App die Lizenz erneut prüfen.
+Dateien:  encoder.onnx, decoder.onnx, joiner.onnx unverändert; modell.json beschreibt Ein-/Ausgänge und Zeichenliste
+          (erzeugt aus den Angaben in den Modelldateien und tokens.txt).
+Das Modell läuft vollständig im Gerät (onnxruntime-web). Es wird kein Ton hochgeladen.

@@ -1,0 +1,42 @@
+{
+ "titel": "Untertitel und schneller Rohschnitt",
+ "dauer": 82,
+ "kapitel": [
+  {
+   "t": 1.58,
+   "text": "Unter Schalter warten zwei Helfer, die dir viel Arbeit abnehmen. Beide sind aus, bis du sie einschaltest."
+  },
+  {
+   "t": 9.95,
+   "text": "Automatische Untertitel. Die App erkennt, was gesprochen wird, und schreibt es als Text ins Bild. Das geschieht im Gerät. Dein Ton wird nirgendwohin geschickt."
+  },
+  {
+   "t": 20.01,
+   "text": "Tipp auf Sprache jetzt erkennen. Beim ersten Mal lädt die App einmalig das Sprachmodell."
+  },
+  {
+   "t": 27.05,
+   "text": "Fertig. Der Text steht im Bild, und in der Zeitleiste gibt es die neue Spur Untertitel. Schneidest du später um, wandern die Untertitel mit."
+  },
+  {
+   "t": 37.75,
+   "text": "Jede Zeile kannst du nachbessern. Zeit antippen heißt hinspringen, Text antippen heißt ändern. Größe und Platz im Bild stellst du darüber ein."
+  },
+  {
+   "t": 50.59,
+   "text": "Der zweite Helfer ist der schnelle Rohschnitt. Er setzt aus deinen Clips einen ersten Film zusammen: alle nacheinander, jeweils der mittlere Teil."
+  },
+  {
+   "t": 61.16,
+   "text": "Du tippst die gewünschte Länge an und dann auf Rohschnitt vorschlagen."
+  },
+  {
+   "t": 65.11,
+   "text": "Die App zeigt dir die Szenen. Du entscheidest, ob du den Vorschlag übernimmst."
+  },
+  {
+   "t": 71.13,
+   "text": "Jetzt liegt der Vorschlag in der Zeitleiste, und du verfeinerst ihn wie gewohnt. Mit dem Pfeil oben ist der alte Stand sofort wieder da."
+  }
+ ]
+}
