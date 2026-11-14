@@ -1,7 +1,9 @@
 // TW Schnittraum – Bildaufbau. Ein und dieselbe Funktion malt die Vorschau und jedes Bild der fertigen Datei,
 // damit das Ergebnis genau so aussieht wie in der Vorschau. Alle Maße hängen an W/H (Vorschau klein, Ausgabe groß).
-import { aktive } from './modell.js';
+import { aktive, quellZeit } from './modell.js';
 import { gefaerbt, verwischt } from './farbe-ersatz.js';
+import { rahmenInnen, rahmenGrund, rahmenKarte, rahmenOben, bewegung, zeichneAuflagen, glWerte, stelleBei } from './effekte.js';
+import { glBild } from './effekte-gl.js';
 
 // Kann die Malfläche selbst filtern (Helligkeit, Unschärfe …)? Auf iPhone und iPad teils nicht – dann rechnet farbe-ersatz.js.
 let filterDa = null;
@@ -23,8 +25,63 @@ export function filterText(a, H) {
   return f.length ? f.join(' ') : 'none';
 }
 
+// Übergang HINEIN (k: 0 → 1) für den neuen Clip. → { alpha, dx, dy, mass, dreh, form (Ausschnitt), zus (Zusatz für die Bildeffekte) }
+function hinein(art, k, W, H) {
+  const e = weichAus(k), u = { alpha: 1, dx: 0, dy: 0, mass: 1, dreh: 0, form: null, zus: null };
+  switch (art) {
+    case 'blende': u.alpha = k; break;
+    case 'schwarz': case 'weiss': u.alpha = k < 0.5 ? 0 : (k - 0.5) * 2; break;
+    case 'schieben': u.dx = (1 - e) * W; break;
+    case 'schiebenR': u.dx = -(1 - e) * W; break;
+    case 'schiebenO': u.dy = (1 - e) * H; break;
+    case 'schiebenU': u.dy = -(1 - e) * H; break;
+    case 'wischen': u.form = ['r', 0, 0, e * W, H]; break;
+    case 'wischenL': u.form = ['r', W - e * W, 0, e * W, H]; break;
+    case 'wischenU': u.form = ['r', 0, 0, W, e * H]; break;
+    case 'wischenO': u.form = ['r', 0, H - e * H, W, e * H]; break;
+    case 'tuer': u.form = ['r', W / 2 - e * W / 2, 0, e * W, H]; break;
+    case 'kreis': u.form = ['k', e * Math.hypot(W, H) / 2]; break;
+    case 'raute': u.form = ['d', e]; break;
+    case 'uhr': u.form = ['u', k]; break;
+    case 'jalousie': u.form = ['j', e]; break;
+    case 'zoom': u.alpha = Math.min(1, k * 1.6); u.mass = 1.5 - 0.5 * e; break;
+    case 'drehen': u.alpha = Math.min(1, k * 2); u.mass = 0.7 + 0.3 * e; u.dreh = -(1 - e) * 0.35; break;
+    case 'unscharf': u.alpha = k; u.zus = { weichx: 1 - k }; break;
+    case 'pixel': u.alpha = k < 0.5 ? 0 : 1; u.zus = { pixel: Math.min(1, (1 - k) * 2) * 0.8 }; break;
+    case 'stoerung': u.alpha = k < 0.5 ? 0 : 1; u.zus = { glitch: Math.min(1, (1 - k) * 2.4), saum: Math.min(1, (1 - k) * 2) }; break;
+    case 'wirbel': u.alpha = k < 0.5 ? 0 : 1; u.zus = { wirbel: Math.min(1, (1 - k) * 2) }; break;
+  }
+  return u;
+}
+// Übergang HINAUS (k: 0 → 1) für den alten Clip – ergänzt, was „hinein“ für ihn ergeben hat.
+function hinaus(u, art, k, W, H) {
+  const e = weichAus(k), halb = Math.min(1, k * 2);
+  switch (art) {
+    case 'schwarz': case 'weiss': u.alpha *= k < 0.5 ? 1 - k * 2 : 0; break;
+    case 'schieben': u.dx = -e * W; break;
+    case 'schiebenR': u.dx = e * W; break;
+    case 'schiebenO': u.dy = -e * H; break;
+    case 'schiebenU': u.dy = e * H; break;
+    case 'zoom': u.mass = 1 + 0.6 * e; break;
+    case 'unscharf': u.zus = { ...u.zus, weichx: k }; break;
+    case 'pixel': u.zus = { ...u.zus, pixel: halb * 0.8 }; break;
+    case 'stoerung': u.zus = { ...u.zus, glitch: Math.min(1, k * 2.4), saum: halb }; break;
+    case 'wirbel': u.zus = { ...u.zus, wirbel: halb }; break;
+  }
+}
+function schneideForm(ctx, f, W, H) {
+  ctx.beginPath();
+  if (f[0] === 'r') ctx.rect(f[1], f[2], f[3], f[4]);
+  else if (f[0] === 'k') ctx.arc(W / 2, H / 2, f[1], 0, 6.2832);
+  else if (f[0] === 'd') { const a = f[1] * W, b = f[1] * H; ctx.moveTo(W / 2 - a, H / 2); ctx.lineTo(W / 2, H / 2 - b); ctx.lineTo(W / 2 + a, H / 2); ctx.lineTo(W / 2, H / 2 + b); ctx.closePath(); }
+  else if (f[0] === 'u') { ctx.moveTo(W / 2, H / 2); ctx.arc(W / 2, H / 2, Math.hypot(W, H), -Math.PI / 2, -Math.PI / 2 + f[1] * 2 * Math.PI); ctx.closePath(); }
+  else { const n = 8, hh = H / n; for (let i = 0; i < n; i++) ctx.rect(0, i * hh, W, hh * f[1] + 0.5); }
+  ctx.clip();
+}
+
 // quelle(seg, t) liefert { bild, w, h } (Videobild oder Foto) oder null, wenn noch nichts da ist.
-// opt: { logo: Bild, auswahl: Text-ID, spielt: läuft die Vorschau?, boxen: [] (wird mit den Text-Rahmen gefüllt, für das Anfassen in der Vorschau) }
+// opt: { logo: Bild, auswahl: Text-ID, spielt: läuft die Vorschau?, boxen: [] (wird mit den Text-Rahmen gefüllt, für das Anfassen in der Vorschau),
+//        stelle: { clip, liste, id } – diese Stelle wird in der Vorschau umrandet (zum Verschieben) }
 export function zeichne(ctx, W, H, t, p, lay, quelle, opt = {}) {
   const akt = aktive(lay, t);
   let grund = p.hintergrund || '#000000', karte = 0;
@@ -38,25 +95,20 @@ export function zeichne(ctx, W, H, t, p, lay, quelle, opt = {}) {
     const k = s.ueb > 0 && t < s.t0 + s.ueb ? (t - s.t0) / s.ueb : 1;           // Fortschritt des Übergangs HINEIN
     const n = lay.segs[s.i + 1];
     const kAus = n && n.ueb > 0 && t >= n.t0 ? Math.min(1, (t - n.t0) / n.ueb) : 0; // Fortschritt des Übergangs HINAUS
-    const art = k < 1 ? c.ueb.art : null, artAus = kAus > 0 ? n.c.ueb.art : null;
-    let alpha = 1, dx = 0, schnitt = null;
-    if (art === 'blende') alpha = k;
-    else if (art === 'schwarz' || art === 'weiss') alpha = k < 0.5 ? 0 : (k - 0.5) * 2;
-    else if (art === 'schieben') dx = (1 - weichAus(k)) * W;
-    else if (art === 'wischen') schnitt = weichAus(k) * W;
-    if (artAus === 'schwarz' || artAus === 'weiss') alpha *= kAus < 0.5 ? 1 - kAus * 2 : 0;
-    else if (artAus === 'schieben') dx = -weichAus(kAus) * W;
+    const u = hinein(k < 1 ? c.ueb.art : null, k, W, H);
+    if (kAus > 0) hinaus(u, n.c.ueb.art, kAus, W, H);
+    let alpha = u.alpha;
     const rel = t - s.t0, rest = s.t1 - t;
     if (c.einbl > 0 && rel < c.einbl) alpha *= rel / c.einbl;
     if (c.ausbl > 0 && rest < c.ausbl) alpha *= rest / c.ausbl;
     if (c.art === 'karte') karte = Math.max(karte, Math.min(1, alpha));
     if (alpha <= 0.001) continue;
     ctx.save();
-    if (schnitt !== null) { ctx.beginPath(); ctx.rect(0, 0, schnitt, H); ctx.clip(); }
-    if (dx) ctx.translate(dx, 0);
+    if (u.form) schneideForm(ctx, u.form, W, H);
+    if (u.dx || u.dy || u.mass !== 1 || u.dreh) { ctx.translate(W / 2 + u.dx, H / 2 + u.dy); ctx.rotate(u.dreh); ctx.scale(u.mass, u.mass); ctx.translate(-W / 2, -H / 2); }
     ctx.globalAlpha = Math.min(1, alpha);
     if (c.art === 'karte') zeichneKarte(ctx, W, H, rel, s.d, c.karte, opt);
-    else zeichneClip(ctx, W, H, t, s, quelle(s, t));
+    else zeichneClip(ctx, W, H, t, s, quelle(s, t), u.zus, opt);
     ctx.restore();
   }
 
@@ -66,56 +118,139 @@ export function zeichne(ctx, W, H, t, p, lay, quelle, opt = {}) {
   ctx.restore();
 }
 
-function zeichneClip(ctx, W, H, t, s, q) {
-  const c = s.c, grundAlpha = ctx.globalAlpha;
-  if (!q || !q.w || !q.h) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); return; }
-  const a = c.farbe || {};
-  const grad = c.dreh || 0, dreh = grad * Math.PI / 180, quer = grad % 180 !== 0;
-  const ew = quer ? q.h : q.w, eh = quer ? q.w : q.h;
-  let zoom = c.zoom || 1;
+/** Wo und wie groß liegt das Bild eines Clips zur Zeit t? Gleiche Rechnung für das Malen und für das Antippen in der Vorschau. */
+export function lage(W, H, t, s, q) {
+  const c = s.c, R = rahmenInnen(c, W, H), B = bewegung(c, t, s, R.w, R.h);
+  const grad = c.dreh || 0, quer = grad % 180 !== 0, ew = quer ? q.h : q.w, eh = quer ? q.w : q.h;
+  let zoom = (c.zoom || 1) * B.zoom;
   if (c.kb) zoom *= 1 + 0.1 * Math.min(1, Math.max(0, (t - s.t0) / s.d)); // langsames Heranfahren
-  const nativ = kannFiltern(ctx);
-  const male = (massstab, filter, mx, my, bild = q.bild) => {
+  const m = (c.passung === 'einpassen' ? Math.min(R.w / ew, R.h / eh) : Math.max(R.w / ew, R.h / eh)) * zoom;
+  return { R, m, ew, eh, cx: R.w / 2 + ((c.x || 0) + B.x) * R.w, cy: R.h / 2 + ((c.y || 0) + B.y) * R.h, w: grad * Math.PI / 180 + B.dreh, sx: c.spiegel ? -1 : 1 };
+}
+const dreheUm = (x, y, mx, my, w) => { const co = Math.cos(w), si = Math.sin(w), dx = x - mx, dy = y - my; return [mx + dx * co - dy * si, my + dx * si + dy * co]; };
+/** Punkt der Malfläche → Stelle im Quellbild (0 … 1; außerhalb des Bildes kleiner 0 oder größer 1). */
+export function zuQuelle(W, H, t, s, q, x, y) {
+  const L = lage(W, H, t, s, q), R = L.R;
+  if (R.kipp) [x, y] = dreheUm(x, y, W / 2, H / 2, -R.kipp);
+  const [px, py] = dreheUm(x - R.x - L.cx, y - R.y - L.cy, 0, 0, -L.w);
+  return [px / (L.sx * L.m) / q.w + 0.5, py / L.m / q.h + 0.5];
+}
+/** Stelle im Quellbild (0 … 1) → Punkt der Malfläche. */
+export function vonQuelle(W, H, t, s, q, u, v) {
+  const L = lage(W, H, t, s, q), R = L.R;
+  let [x, y] = dreheUm((u - 0.5) * q.w * L.sx * L.m, (v - 0.5) * q.h * L.m, 0, 0, L.w);
+  x += R.x + L.cx; y += R.y + L.cy;
+  return R.kipp ? dreheUm(x, y, W / 2, H / 2, R.kipp) : [x, y];
+}
+
+let ebeneF = null;
+// Zweite Malfläche für Clips, die halb durchsichtig sind und aus mehreren Lagen bestehen (Rahmen, unscharfer Rand) – sonst schiene der Hintergrund durch.
+function ebene(W, H) {
+  if (!ebeneF) ebeneF = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(W, H) : Object.assign(document.createElement('canvas'), { width: W, height: H });
+  if (ebeneF.width !== W || ebeneF.height !== H) { ebeneF.width = W; ebeneF.height = H; }
+  return ebeneF;
+}
+
+function zeichneClip(ctx, W, H, t, s, q, zus, opt) {
+  const c = s.c;
+  if (!q || !q.w || !q.h) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); return; }
+  const rahmen = c.rahmen && c.rahmen.art && c.rahmen.art !== 'keiner' ? c.rahmen : null;
+  if (ctx.globalAlpha < 0.999 && (rahmen || c.passung === 'einpassen')) {
+    // Erst deckend auf eine eigene Fläche malen, dann als Ganzes halb durchsichtig auflegen.
+    const f = ebene(W, H), x = f.getContext('2d');
+    x.save(); x.globalAlpha = 1; x.filter = 'none'; x.globalCompositeOperation = 'source-over'; x.clearRect(0, 0, W, H); maleClip(x, W, H, t, s, q, zus, opt, rahmen); x.restore();
+    ctx.drawImage(f, 0, 0);
+    return;
+  }
+  maleClip(ctx, W, H, t, s, q, zus, opt, rahmen);
+}
+
+function maleClip(ctx, W, H, t, s, q, zus, opt, rahmen) {
+  const c = s.c, grundAlpha = ctx.globalAlpha, a = c.farbe || {}, rel = t - s.t0;
+  const L = lage(W, H, t, s, q), R = L.R, nativ = kannFiltern(ctx);
+  // Bildeffekte: Die Rechenstufe liefert das veränderte Bild in der Form des Quellbilds – höchstens so groß, wie es gezeigt wird.
+  const P = glWerte(c, zus, t, c.art === 'video' ? quellZeit(s, t) : rel);
+  const kl = Math.min(1, L.m), bild = (P && glBild(q.bild, q.w, q.h, q.w * kl, q.h * kl, P)) || q.bild;
+  const male = (massstab, filter, mitte, b = bild) => {
     ctx.save();
-    ctx.translate(W / 2 + mx * W, H / 2 + my * H);
-    ctx.rotate(dreh);
-    ctx.scale((c.spiegel ? -1 : 1) * massstab, massstab);
+    if (mitte) ctx.translate(R.w / 2, R.h / 2); else ctx.translate(L.cx, L.cy);
+    ctx.rotate(L.w);
+    ctx.scale(L.sx * massstab, massstab);
     if (nativ) ctx.filter = filter;
-    ctx.drawImage(bild, -q.w / 2, -q.h / 2, q.w, q.h);
+    ctx.drawImage(b, -q.w / 2, -q.h / 2, q.w, q.h);
     ctx.restore();
+  };
+  // Das Bild bildfüllend, unscharf und dunkel – als Hintergrund hinter einem eingepassten oder eingefassten Bild.
+  const maleUnscharf = (B, Hh) => {
+    const mh = Math.max(B / L.ew, Hh / L.eh) * 1.12;
+    ctx.save(); ctx.translate(B / 2, Hh / 2); ctx.rotate((c.dreh || 0) * Math.PI / 180); ctx.scale(L.sx * mh, mh);
+    if (nativ) { ctx.filter = `blur(${(Hh * 0.035).toFixed(1)}px) brightness(.55)`; ctx.drawImage(bild, -q.w / 2, -q.h / 2, q.w, q.h); }
+    else ctx.drawImage(verwischt(bild, q.w, q.h, (Hh * 0.035) / mh) || bild, -q.w / 2, -q.h / 2, q.w, q.h);
+    ctx.restore();
+    if (!nativ) { ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(0, 0, B, Hh); }
   };
   ctx.save();
   ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
-  const f = filterText(a, H);
+  if (rahmen) {
+    rahmenGrund(ctx, W, H, rahmen, R, () => maleUnscharf(W, H));
+    if (R.kipp) { ctx.translate(W / 2, H / 2); ctx.rotate(R.kipp); ctx.translate(-W / 2, -H / 2); }
+    rahmenKarte(ctx, W, H, rahmen, R);
+  }
+  ctx.save();
+  if (rahmen && (R.x || R.y || R.r)) { ctx.beginPath(); ctx.roundRect(R.x, R.y, R.w, R.h, R.r); ctx.clip(); }
+  ctx.translate(R.x, R.y);
+  const f = filterText(a, R.h);
   // Ohne Canvas-Filter: Farbe über WebGL, Unschärfe über Verkleinern – das Ergebnis entspricht den Filtern.
   const vorn = () => {
-    if (nativ || f === 'none') return q.bild;
-    let b = (a.hell || a.kontrast || a.saett || a.sepia) ? (gefaerbt(q.bild, q.w, q.h, a) || q.bild) : q.bild;
-    if (a.weich) { const m = (c.passung === 'einpassen' ? Math.min(W / ew, H / eh) : Math.max(W / ew, H / eh)) * zoom; b = verwischt(b, q.w, q.h, (a.weich / 100 * H * 0.02) / Math.max(0.01, m)) || b; }
+    if (nativ || f === 'none') return bild;
+    let b = (a.hell || a.kontrast || a.saett || a.sepia) ? (gefaerbt(bild, q.w, q.h, a) || bild) : bild;
+    if (a.weich) b = verwischt(b, q.w, q.h, (a.weich / 100 * R.h * 0.02) / Math.max(0.01, L.m)) || b;
     return b;
   };
   if (c.passung === 'einpassen') {
-    if (c.hg === 'unscharf') {
-      const mh = Math.max(W / ew, H / eh) * 1.12;
-      if (nativ) male(mh, `blur(${(H * 0.035).toFixed(1)}px) brightness(.55)`, 0, 0);
-      else { male(mh, 'none', 0, 0, verwischt(q.bild, q.w, q.h, (H * 0.035) / mh) || q.bild); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(0, 0, W, H); }
-    } else { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); }
-    male(Math.min(W / ew, H / eh) * zoom, f, c.x || 0, c.y || 0, vorn());
-  } else {
-    male(Math.max(W / ew, H / eh) * zoom, f, c.x || 0, c.y || 0, vorn());
+    if (c.hg === 'unscharf') maleUnscharf(R.w, R.h);
+    else { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, R.w, R.h); }
   }
+  male(L.m, f, false, vorn());
   if (a.waerme) {
     ctx.globalCompositeOperation = 'soft-light';
     ctx.globalAlpha = grundAlpha * Math.min(1, Math.abs(a.waerme) / 100 * 0.7);
     ctx.fillStyle = a.waerme > 0 ? '#ff8a1e' : '#1e86ff';
-    ctx.fillRect(0, 0, W, H);
+    ctx.fillRect(0, 0, R.w, R.h);
     ctx.globalCompositeOperation = 'source-over';
   }
   if (a.vignette) {
-    const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.hypot(W, H) * 0.55);
+    const g = ctx.createRadialGradient(R.w / 2, R.h / 2, Math.min(R.w, R.h) * 0.3, R.w / 2, R.h / 2, Math.hypot(R.w, R.h) * 0.55);
     g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${(a.vignette / 100 * 0.85).toFixed(3)})`);
-    ctx.globalAlpha = grundAlpha; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = grundAlpha; ctx.fillStyle = g; ctx.fillRect(0, 0, R.w, R.h);
   }
+  ctx.globalAlpha = grundAlpha;
+  if (c.fx) zeichneAuflagen(ctx, R.w, R.h, c.fx, t, rel);
+  ctx.restore();
+  ctx.restore();
+  if (rahmen) rahmenOben(ctx, W, H, rahmen, t);
+  if (opt && opt.stelle && opt.stelle.clip === c.id) zeichneStelle(ctx, W, H, t, s, q, opt.stelle);
+}
+
+// Die gewählte Stelle (oder der Bereich einer Farbänderung) wird in der Vorschau gestrichelt umrandet – so lässt sie sich anfassen und verschieben.
+function zeichneStelle(ctx, W, H, t, s, q, wahl) {
+  const c = s.c, e = ((wahl.liste === 'umf' ? c.umf : c.stellen) || []).find((x) => x.id === wahl.id), d = e && (wahl.liste === 'umf' ? e.bereich : stelleBei(e, c.art === 'video' ? quellZeit(s, t) : 0));
+  if (!d || !(d.w > 0)) return;
+  const L = lage(W, H, t, s, q), R = L.R;
+  ctx.save();
+  if (R.kipp) { ctx.translate(W / 2, H / 2); ctx.rotate(R.kipp); ctx.translate(-W / 2, -H / 2); }
+  ctx.translate(R.x + L.cx, R.y + L.cy); ctx.rotate(L.w); ctx.scale(L.sx * L.m, L.m);
+  const x = (d.x - 0.5) * q.w, y = (d.y - 0.5) * q.h, b = d.w * q.w, h = d.h * q.h, strich = Math.max(1.5, W * 0.0026) / L.m;
+  ctx.beginPath(); if (d.form === 'rechteck') ctx.rect(x - b / 2, y - h / 2, b, h); else ctx.ellipse(x, y, b / 2, h / 2, 0, 0, 6.2832);
+  ctx.globalAlpha = 1; ctx.lineWidth = strich * 2.2; ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.stroke();
+  ctx.setLineDash([strich * 5, strich * 4]); ctx.lineWidth = strich; ctx.strokeStyle = '#facc15'; ctx.stroke();
+  ctx.restore();
+}
+
+/** Einen Clip allein malen – für die Musterbilder der Palette. */
+export function zeichneEinzel(ctx, W, H, c, q, t = 1, d = 4) {
+  ctx.save(); ctx.globalAlpha = 1; ctx.filter = 'none'; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  maleClip(ctx, W, H, t, { c, i: 0, t0: 0, t1: d, d, ueb: 0 }, q, null, null, c.rahmen && c.rahmen.art && c.rahmen.art !== 'keiner' ? c.rahmen : null);
   ctx.restore();
 }
 

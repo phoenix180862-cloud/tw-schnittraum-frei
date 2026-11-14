@@ -1,7 +1,7 @@
 // TW Schnittraum – Service Worker: Netz zuerst (immer die neueste Fassung), Zwischenspeicher nur, wenn kein Netz da ist.
 // Den Hinweis „Neue Version … – jetzt aktualisieren“ zeigt lib/tw-version.js (vergleicht <meta name="tw-version"> der index.html).
 // Bei jeder Veröffentlichung STAND zusammen mit der Versionsnummer in index.html erhöhen.
-const STAND = 'tw-schnittraum-1.6.0';
+const STAND = 'tw-schnittraum-1.7.0';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(caches.keys().then(k => Promise.all(k.filter(n => n.startsWith('tw-schnittraum-') && n !== STAND).map(n => caches.delete(n)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', (e) => {

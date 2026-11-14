@@ -8,6 +8,7 @@ import { baueZeitleiste } from './zeitleiste.js';
 import { baueTafeln } from './tafeln.js';
 import { baueQuellen } from './quellen-fenster.js';
 import { baueMusik } from './musik-fenster.js';
+import { baueEffektTafel } from './effekte-tafel.js';
 import * as Q from './quellen.js';
 import { starteAufnahme } from './aufnahme.js';
 import { h, chips, haken, meldung, fenster, frage } from './bausteine.js';
@@ -65,6 +66,7 @@ function gewaehlt() {
 function waehle(sel) {
   const gleich = (Z.sel && sel && Z.sel.id === sel.id) || (!Z.sel && !sel);
   Z.sel = sel;
+  if (Z.fx && !gleich) { Z.fx.wahl = null; Z.fx.pick = null; $('bild').classList.remove('zielen'); }      // eine angefasste Stelle gehört zum gewählten Clip
   zl.male(); vor.neu(); zeigKnoepfe();
   if (gleich) return;
   if (sel && tafeln.schmal()) tafeln.setzReiter('eig'); else { tafeln.zeigEig(); if (Z.reiter === 'text' || Z.reiter === 'ton') tafeln.zeigLinks(); }
@@ -437,13 +439,15 @@ async function start() {
   try { await Promise.all(['700 20px "Oswald"', '600 20px "Oswald"', '400 20px "Source Sans 3"', '700 20px "Source Sans 3"', '700 20px "Montserrat"', '400 20px "Bebas Neue"', '700 20px "Playfair Display"', '700 20px "Dancing Script"', '400 20px "Montserrat"', '400 20px "Playfair Display"', '400 20px "Dancing Script"', '400 20px "Oswald"'].map(s => document.fonts.load(s))); } catch (e) { /* Schrift lädt nach */ }
 
   vor = baueVorschau($('bild'), () => ({ p: Z.p, lay: Z.lay }), {
-    logo: () => Z.logo, auswahlText: () => (Z.sel && Z.sel.art === 'text' ? Z.sel.id : null),
+    logo: () => Z.logo, auswahlText: () => (Z.sel && Z.sel.art === 'text' ? Z.sel.id : null), stelle: () => (Z.fx ? Z.fx.wahl : null),
     beiZeit: () => zeigZeit(), beiStatus: (l) => { $('tSpiel').textContent = l ? '⏸' : '▶'; },
     beiEnde: () => { if (aufn.lauf) K.aufnahme.stopp(); },
   });
   Object.assign(K, { zeigAusgabe, vor, aendere, fest: halteFest, waehle, gewaehlt, legeMedium, holeMedien, holeMusik, nimmMedium, nimmUndMelde, verbinde, teile, entferne, verdopple, neuerText: neuerTextAusVorlage, zeigName, setzFormat, sag: meldung, setzeSchnitt, oeffne, sichere });
   K.quellen = baueQuellen(K);
   K.musik = baueMusik(K);              // Musik von der App: im Gerät erzeugt, gehört niemandem
+  K.fx = baueEffektTafel(K);           // Effekte: Palette, Rahmen, Bewegung, Farbe ändern, Stellen im Bild
+  K.tafelNeu = () => { if (tafeln) tafeln.zeigEig(); };
   $('bStart').append(K.quellen.leiste(true));   // die direkten Wege (Ordner, Handy, Google Fotos, Google Drive) gleich auf dem leeren Startbild
   if (Q.MOBIL) $('bStart').querySelector('p').textContent = 'Aus der Galerie, den eigenen Dateien, von der SD-Karte oder frisch aufgenommen. Alles bleibt auf deinem Gerät.';
   zl = baueZeitleiste($('zl'), { hol: () => ({ p: Z.p, lay: Z.lay }), zeit: () => vor.zeit(), geh: (t) => vor.geh(t), auswahl: () => Z.sel, waehle, aendere, fest: halteFest, legeMedium });
@@ -509,13 +513,16 @@ function buehneAnfassen() {
   const c = $('bild'); let zieh = null;
   c.addEventListener('pointerdown', (ev) => {
     const r = c.getBoundingClientRect(), fx = c.width / r.width, x = (ev.clientX - r.left) * fx, y = (ev.clientY - r.top) * fx;
-    const box = [...vor.boxen()].reverse().find(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
-    if (box) { waehle({ art: 'text', id: box.id }); const t = gewaehlt(); zieh = { art: 'text', d: t, x0: ev.clientX, y0: ev.clientY, vx: t.x, vy: t.y, fx, bewegt: false }; }
+    if (Z.fx.pick) { K.fx.getippt(x, y); ev.preventDefault(); return; }                      // eine Farbe wird gewählt: Dieser Tipp gehört der Farbe
+    const box = [...vor.boxen()].reverse().find(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h), griff = box ? null : K.fx.fasse(x, y);
+    if (griff) zieh = { art: 'stelle', griff, fx, bewegt: true };
+    else if (box) { waehle({ art: 'text', id: box.id }); const t = gewaehlt(); zieh = { art: 'text', d: t, x0: ev.clientX, y0: ev.clientY, vx: t.x, vy: t.y, fx, bewegt: false }; }
     else if (Z.sel && Z.sel.art === 'clip') { const k = gewaehlt(), s = Z.lay.segs.find(q => q.c === k); if (k && s && istAktiv(s, Math.min(vor.zeit(), Z.lay.dauer - 0.02))) zieh = { art: 'clip', d: k, x0: ev.clientX, y0: ev.clientY, vx: k.x, vy: k.y, fx, bewegt: false }; }
     if (zieh) { vor.halt(); try { c.setPointerCapture(ev.pointerId); } catch (e) { /* egal */ } ev.preventDefault(); }
   });
   c.addEventListener('pointermove', (ev) => {
     if (!zieh) return;
+    if (zieh.art === 'stelle') { const r = c.getBoundingClientRect(); zieh.griff.zieh((ev.clientX - r.left) * zieh.fx, (ev.clientY - r.top) * zieh.fx); return; }
     const dx = (ev.clientX - zieh.x0) * zieh.fx / c.width, dy = (ev.clientY - zieh.y0) * zieh.fx / c.height;
     if (!zieh.bewegt && Math.abs(dx) + Math.abs(dy) < 0.004) return;
     zieh.bewegt = true;
@@ -525,7 +532,7 @@ function buehneAnfassen() {
       else { zieh.d.x = klemm(raste(zieh.vx + dx, 0), -1, 1); zieh.d.y = klemm(raste(zieh.vy + dy, 0), -1, 1); }
     }, false);
   });
-  const los = () => { if (!zieh) return; const z = zieh; zieh = null; if (z.bewegt) { halteFest(); tafeln.zeigEig(); } };
+  const los = () => { if (!zieh) return; const z = zieh; zieh = null; if (z.art === 'stelle') { z.griff.los(); tafeln.zeigEig(); } else if (z.bewegt) { halteFest(); tafeln.zeigEig(); } };
   c.addEventListener('pointerup', los); c.addEventListener('pointercancel', los);
 }
 
@@ -546,12 +553,12 @@ function tastatur() {
     if (strg || ev.altKey) return;
     if (k === ' ') { ev.preventDefault(); if (aufn.lauf) K.aufnahme.stopp(); else vor.umschalten(); }
     else if (k === 's' || k === 'S') { ev.preventDefault(); teile(); }
-    else if (k === 'Delete' || k === 'Backspace') { ev.preventDefault(); entferne(); }
+    else if (k === 'Delete' || k === 'Backspace') { ev.preventDefault(); if (!K.fx.entferneWahl()) entferne(); }      // eine angefasste Stelle geht allein – nicht der ganze Clip
     else if (k === 'ArrowLeft' || k === 'ArrowRight') { if (z && z.type === 'range') return; ev.preventDefault(); vor.halt(); vor.geh(vor.zeit() + (k === 'ArrowLeft' ? -1 : 1) * (ev.shiftKey ? 1 : 1 / 30)); }
     else if (k === 'Home') { ev.preventDefault(); vor.geh(0); }
     else if (k === 'End') { ev.preventDefault(); vor.geh(Z.lay.dauer); }
     else if (k === '+' ) zl.zoom(1.4); else if (k === '-') zl.zoom(1 / 1.4);
-    else if (k === 'Escape') { if (document.body.classList.contains('vollbild')) { document.body.classList.remove('vollbild'); passeBuehne(); } else waehle(null); }
+    else if (k === 'Escape') { if (document.body.classList.contains('vollbild')) { document.body.classList.remove('vollbild'); passeBuehne(); } else if (!K.fx.lassLos()) waehle(null); }
   });
 }
 

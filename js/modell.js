@@ -9,7 +9,9 @@ export const FORMATE = {
   hochkant: { name: 'Hochkant 4:5', kurz: '4:5', wofuer: 'Beitrag Instagram', w: 1080, h: 1350 },
 };
 
-export const UEBERGAENGE = { keiner: 'Harter Schnitt', blende: 'Überblenden', schwarz: 'Über Schwarz', weiss: 'Über Weiß', schieben: 'Schieben', wischen: 'Wischen' };
+export const UEBERGAENGE = { keiner: 'Harter Schnitt', blende: 'Überblenden', schwarz: 'Über Schwarz', weiss: 'Über Weiß', unscharf: 'Über Unschärfe',
+  schieben: 'Schieben ←', schiebenR: 'Schieben →', schiebenO: 'Schieben ↑', schiebenU: 'Schieben ↓', wischen: 'Wischen →', wischenL: 'Wischen ←', wischenU: 'Wischen ↓', wischenO: 'Wischen ↑',
+  tuer: 'Tür auf', kreis: 'Kreis', raute: 'Raute', uhr: 'Uhrzeiger', jalousie: 'Jalousie', zoom: 'Hineinzoomen', drehen: 'Hereindrehen', pixel: 'Über Mosaik', stoerung: 'Bildstörung', wirbel: 'Wirbel' };
 
 export const SCHRIFTEN = ['Oswald', 'Source Sans 3', 'Montserrat', 'Bebas Neue', 'Playfair Display', 'Dancing Script'];
 
@@ -57,6 +59,8 @@ export function neuerClip(m) {
     laut: 100, stumm: false, einbl: 0, ausbl: 0,
     passung: 'fuellen', hg: 'unscharf', zoom: 1, x: 0, y: 0, dreh: 0, spiegel: false, kb: false,
     farbe: { ...FARBE_NEUTRAL }, stil: 'natur',
+    // Effekte (js/effekte.js) – alles aus: Bildeffekte { Kennung: Stärke }, Rahmen, Bewegung, Stellen im Bild, Farbe ändern
+    fx: {}, rahmen: { art: 'keiner' }, bew: { art: 'keine', staerke: 50 }, stellen: [], umf: [],
     ueb: { art: 'keiner', dauer: 0.6 },
   };
 }
@@ -240,6 +244,10 @@ export function pflege(p) {
   p.schalter = { ...n.schalter, ...p.schalter };
   p.logo = { ...n.logo, ...p.logo }; p.vorspann = { ...n.vorspann, ...p.vorspann }; p.abspann = { ...n.abspann, ...p.abspann };
   p.untertitel = { ...n.untertitel, ...p.untertitel }; p.ki = { ...n.ki, ...p.ki }; if (!p.sprache || typeof p.sprache !== 'object') p.sprache = {};
-  for (const c of p.clips) { c.farbe = { ...FARBE_NEUTRAL, ...c.farbe }; if (!c.ueb) c.ueb = { art: 'keiner', dauer: 0.6 }; }
+  for (const c of p.clips) {
+    c.farbe = { ...FARBE_NEUTRAL, ...c.farbe }; if (!c.ueb) c.ueb = { art: 'keiner', dauer: 0.6 };
+    if (!c.fx || typeof c.fx !== 'object') c.fx = {}; if (!c.rahmen) c.rahmen = { art: 'keiner' }; if (!c.bew) c.bew = { art: 'keine', staerke: 50 };
+    if (!Array.isArray(c.stellen)) c.stellen = []; if (!Array.isArray(c.umf)) c.umf = [];
+  }
   return p;
 }

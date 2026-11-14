@@ -94,6 +94,7 @@ async function pruefeUmgebung() {
   setz('speichern', 'Fertiges Video speichern und teilen', 'gut', (dialog ? 'Du wählst selbst, wohin das Video gespeichert wird.' : 'Das Video landet im Ordner „Downloads“' + (lager ? ' (auch lange Filme, ohne den Arbeitsspeicher zu füllen).' : '.')) + (teilen ? ' „Teilen“ direkt an YouTube, Instagram, Facebook oder Drive ist möglich.' : ' „Teilen“ aus der App heraus gibt es auf diesem Gerät nicht.'), { dialog, lager, teilen });
   const filter = typeof document.createElement('canvas').getContext('2d').filter === 'string';
   setz('farbe', 'Farbregler und Unschärfe', 'gut', filter ? 'Ja, direkt.' : 'Ja – über den eingebauten Ersatzweg.', { filter });
+  try { const { effekteBereit } = await import('./effekte-gl.js'), fx = effekteBereit(); setz('effekte', 'Bildeffekte der Palette', fx ? 'gut' : 'halb', fx ? 'Ja – alle Effekte der Palette.' : 'Zum Teil – Rahmen, Bewegung, Licht und Wetter gehen; rechnende Bildeffekte wie Comic oder Mosaik kann dieses Gerät nicht darstellen.', { art: fx }); } catch (e) { /* nicht entscheidend */ }
   try { const s = await navigator.storage.estimate(), frei = (s.quota - s.usage) / 1e6; setz('platz', 'Platz im Gerät für die App', frei > 400 ? 'gut' : 'halb', frei > 400 ? `Genug (rund ${frei > 2000 ? Math.round(frei / 1000) + ' GB' : Math.round(frei) + ' MB'} frei für Sprachmodell und Zwischenablage).` : `Knapp (rund ${Math.round(frei)} MB) – für die Spracherkennung werden etwa 90 MB gebraucht.`, { freiMB: Math.round(frei) }); } catch (e) { /* nicht überall */ }
 }
 

@@ -231,6 +231,8 @@ export function baueTafeln(K) {
       farbRegler('Randschatten', 'vignette', 0), farbRegler('Weichzeichnen', 'weich', 0), farbRegler('Sepia', 'sepia', 0),
       Z.p.clips.length > 1 ? h('button', { class: 'btn klein', style: { marginTop: '6px' }, onclick: () => { K.aendere((p) => { for (const k of p.clips) { k.farbe = { ...c.farbe }; k.stil = c.stil; } }); K.sag('Farbe auf alle Clips übertragen.'); } }, 'Auf alle Clips übertragen') : null));
 
+    if (K.fx) aus.push(...K.fx.teile(c));      // Effekte, Rahmen, Bewegung, Farbe ändern, Stellen im Bild (js/effekte-tafel.js)
+
     aus.push(teil('Übergang davor',
       erster ? h('p', { class: 'hinweis' }, 'Der erste Clip hat keinen Übergang davor. Für einen weichen Einstieg oben „Einblenden“ nutzen.') : [
         chips(Object.entries(UEBERGAENGE), c.ueb.art, (v) => { K.aendere(() => { c.ueb.art = v; }); zeigEig(); if (s && v !== 'keiner') K.vor.geh(Math.max(0, s.t0 - 0.8)); }),

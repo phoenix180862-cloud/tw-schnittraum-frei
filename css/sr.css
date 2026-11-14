@@ -124,6 +124,20 @@ input[type=color] { width: 38px; height: 30px; border: 1px solid var(--line); bo
 .s-satz { flex-wrap: nowrap; align-items: flex-start; }
 .s-satz .s-feld { flex: 1; min-width: 0; resize: vertical; }
 .s-satz .s-zeit { min-width: 38px; padding-top: 9px; font-variant-numeric: tabular-nums; }
+/* ───── Effekte: Palette mit Musterbildern, Zeilen in der Tafel „Einstellen“ ───── */
+.fx-zeile { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px; }
+.fx-zeile .fx-name { color: var(--tx2); font-size: 13.5px; padding: 6px 0; }
+.fx-weg { width: calc(var(--knopf) - 6px); height: calc(var(--knopf) - 6px); font-size: 14px; }
+.fx-eintrag .fx-fleck { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line2); flex: none; display: inline-block; }
+.fx-unter { margin: 0 0 8px; padding: 6px 0 8px 10px; border-left: 2px solid var(--gelb); }
+.pal-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; }
+.pal-raster.hoch { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.pal-kachel { display: flex; flex-direction: column; padding: 0; border: 2px solid var(--line); border-radius: 8px; background: var(--bg); overflow: hidden; color: var(--tx2); text-align: left; }
+.pal-kachel canvas { width: 100%; height: auto; display: block; background: var(--buehne); }
+.pal-kachel span { padding: 4px 7px 5px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pal-kachel:hover { border-color: var(--line2); color: var(--tx); }
+.pal-kachel.an { border-color: var(--gelb); color: var(--tx); font-weight: 600; box-shadow: inset 0 -3px 0 var(--rot); }
+#bild.zielen { cursor: crosshair; }
 .liste-eintrag { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); margin-bottom: 5px; cursor: pointer; }
 .liste-eintrag:hover { border-color: var(--line2); } .liste-eintrag.an { border-color: var(--gelb); }
 .liste-eintrag .n { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; } .liste-eintrag small { color: var(--tx3); }

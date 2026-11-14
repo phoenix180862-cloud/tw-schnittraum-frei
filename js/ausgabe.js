@@ -5,6 +5,7 @@ import { Input, Output, ALL_FORMATS, BlobSource, Mp4OutputFormat, BufferTarget, 
 import { tonLuecken, tonPuffer } from './tonlesen.js';
 import { istAktiv, quellZeit, pegelSeg, pegelTon, tonDauer, klemm } from './modell.js';
 import { zeichne } from './render.js';
+import { bewZoomMax, rahmenInnen } from './effekte.js';
 
 const RATE = 48000, FENSTER = 8; // Ton-Abtastrate, Länge eines Misch-Abschnitts in Sekunden
 
@@ -91,7 +92,8 @@ export async function ausgeben(a) {
       const c = s.c, quer = (c.dreh || 0) % 180 !== 0;
       const mw = m.w || await e.v.getDisplayWidth(), mh = m.h || await e.v.getDisplayHeight();
       const ew = quer ? mh : mw, eh = quer ? mw : mh;
-      const noetig = (c.passung === 'einpassen' ? Math.min(W / ew, H / eh) : Math.max(W / ew, H / eh)) * (c.zoom || 1) * (c.kb ? 1.1 : 1);
+      const R = rahmenInnen(c, W, H);       // mit Rahmen ist das Bild kleiner, mit Bewegung zeitweise größer
+      const noetig = (c.passung === 'einpassen' ? Math.min(R.w / ew, R.h / eh) : Math.max(R.w / ew, R.h / eh)) * (c.zoom || 1) * (c.kb ? 1.1 : 1) * bewZoomMax(c, s, R.w, R.h);
       const k = Math.min(1, Math.max(0.1, noetig)); // nie größer dekodieren als gebraucht (spart Zeit bei 4K-Material)
       const bw = Math.max(2, Math.round(mw * k / 2) * 2), bh = Math.max(2, Math.round(mh * k / 2) * 2);
       const senke = new CanvasSink(e.v, { width: bw, height: bh, fit: 'fill', poolSize: 2 });

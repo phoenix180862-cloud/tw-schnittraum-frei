@@ -101,16 +101,18 @@ export function baueVorschau(canvas, hol, opt) {
     for (const [id, e] of tons) if (!da.has(id)) { loese(e); tons.delete(id); }
   }
 
+  // Das Bild eines Abschnitts, so wie es gerade vorliegt: { bild, w, h } oder null.
+  function quelle(s) {
+    const m = medien.get(s.c.medium); if (!m) return null;
+    if (s.c.art === 'bild') return m.bild ? { bild: m.bild, w: m.bild.width, h: m.bild.height } : null;
+    const e = vids.get(s.c.id);
+    if (!e || e.el.readyState < 2 || !e.el.videoWidth) return null;
+    return { bild: e.el, w: e.el.videoWidth, h: e.el.videoHeight };
+  }
   function male() {
     const { p, lay } = hol();
     boxen = [];
-    zeichne(ctx, canvas.width, canvas.height, zeigZeit(lay), p, lay, (s) => {
-      const m = medien.get(s.c.medium); if (!m) return null;
-      if (s.c.art === 'bild') return m.bild ? { bild: m.bild, w: m.bild.width, h: m.bild.height } : null;
-      const e = vids.get(s.c.id);
-      if (!e || e.el.readyState < 2 || !e.el.videoWidth) return null;
-      return { bild: e.el, w: e.el.videoWidth, h: e.el.videoHeight };
-    }, { logo: opt.logo(), auswahl: opt.auswahlText(), spielt: laeuft, boxen });
+    zeichne(ctx, canvas.width, canvas.height, zeigZeit(lay), p, lay, quelle, { logo: opt.logo(), auswahl: opt.auswahlText(), spielt: laeuft, boxen, stelle: opt.stelle ? opt.stelle() : null });
   }
 
   function takt(jetzt) {
@@ -167,7 +169,8 @@ export function baueVorschau(canvas, hol, opt) {
     spiel, halt, passe,
     umschalten() { laeuft ? halt() : spiel(); },
     geh(t) { const { lay } = hol(); zeit = klemm(t, 0, lay.dauer); if (laeuft) { basisZeit = zeit; basisUhr = performance.now(); } schmutzig = true; opt.beiZeit(zeit); },
-    zeit: () => zeit, laeuft: () => laeuft, boxen: () => boxen,
+    zeit: () => zeit, laeuft: () => laeuft, boxen: () => boxen, quelle,
+    zeigZeit: () => zeigZeit(hol().lay),
     neu() { schmutzig = true; },
     originalStumm(b) { originalStumm = b; },
     tonAnlage: () => ac,
