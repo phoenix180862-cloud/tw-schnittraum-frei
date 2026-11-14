@@ -62,6 +62,7 @@ textarea.inp { resize: vertical; min-height: 64px; line-height: 1.35; }
 .chip { min-height: calc(var(--knopf) - 4px); padding: 3px 11px; border-radius: 99px; border: 1px solid var(--line); background: var(--bg); color: var(--tx2); white-space: nowrap; }
 .chip:hover { border-color: var(--line2); color: var(--tx); }
 .chip.an { background: var(--bg4); color: var(--tx); border-color: var(--tx3); box-shadow: inset 0 -2px 0 var(--rot); font-weight: 600; }
+@media (pointer: coarse) { .chip { min-height: var(--knopf); } }      /* am Finger sind auch die Auswahl-Knöpfe volle 44 px hoch */
 #kFormat .chip small { color: var(--tx3); margin-left: 5px; font-weight: 400; }
 
 /* Regler */
@@ -137,6 +138,17 @@ input[type=color] { width: 38px; height: 30px; border: 1px solid var(--line); bo
 .pal-kachel span { padding: 4px 7px 5px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pal-kachel:hover { border-color: var(--line2); color: var(--tx); }
 .pal-kachel.an { border-color: var(--gelb); color: var(--tx); font-weight: 600; box-shadow: inset 0 -3px 0 var(--rot); }
+/* Gesichter finden: gefundene Gesichter zum Antippen (an = wird verändert) */
+.gs-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.gs-kachel { display: flex; flex-direction: column; align-items: stretch; padding: 0; border: 2px solid var(--line); border-radius: 8px; background: var(--bg); overflow: hidden; color: var(--tx3); text-align: left; min-height: 44px; }
+.gs-kachel canvas, .gs-kachel .gs-ohne { width: 100%; aspect-ratio: 1; height: auto; display: block; background: var(--buehne); opacity: .38; filter: grayscale(1); }
+.gs-kachel .gs-ohne { display: grid; place-items: center; font-size: 34px; color: var(--tx3); }
+.gs-kachel span { padding: 4px 7px 0; font-size: 13px; }
+.gs-kachel small { padding: 0 7px 5px; font-size: 11.5px; color: var(--tx3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gs-kachel:hover { border-color: var(--line2); }
+.gs-kachel.an { border-color: var(--gelb); color: var(--tx); font-weight: 600; box-shadow: inset 0 -3px 0 var(--rot); }
+.gs-kachel.an canvas, .gs-kachel.an .gs-ohne { opacity: 1; filter: none; }
+.gs-kachel.an small { font-weight: 400; }
 #bild.zielen { cursor: crosshair; }
 .liste-eintrag { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); margin-bottom: 5px; cursor: pointer; }
 .liste-eintrag:hover { border-color: var(--line2); } .liste-eintrag.an { border-color: var(--gelb); }

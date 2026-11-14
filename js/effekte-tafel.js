@@ -1,8 +1,8 @@
 // TW Schnittraum – Effekte in der Tafel „Einstellen“: die Palette zum Antippen (mit Musterbildern aus dem eigenen Clip), Rahmen, Bewegung,
 // „Farbe ändern“ (Farbe im Bild antippen) und „Stellen im Bild“ (weichzeichnen, verpixeln, abdecken, hervorheben, vergrößern).
 // Grundsatz: alles aus, bis es angetippt wird. Was hier eingestellt wird, sieht in der Vorschau genauso aus wie in der fertigen Datei.
-import { FORMATE, klemm } from './modell.js';
-import { EFFEKTE, EFFEKT_GRUPPEN, RAHMEN, BEWEGUNGEN, STELLEN_ARTEN, UMF_ARTEN, STELLEN_HOECHSTENS, FARBEN_HOECHSTENS, neueStelle, neueFarbe } from './effekte.js';
+import { FORMATE, klemm, quellZeit } from './modell.js';
+import { EFFEKTE, EFFEKT_GRUPPEN, RAHMEN, BEWEGUNGEN, STELLEN_ARTEN, UMF_ARTEN, STELLEN_HOECHSTENS, FARBEN_HOECHSTENS, neueStelle, neueFarbe, stelleBei } from './effekte.js';
 import { zeichneEinzel, zuQuelle } from './render.js';
 import { effekteBereit } from './effekte-gl.js';
 import { medien } from './medien.js';
@@ -128,7 +128,7 @@ export function baueEffektTafel(K) {
   function teilStellen(c) {
     const liste = c.stellen || [], w = Z.fx.wahl, offen = w && w.clip === c.id && w.liste === 'stellen' ? liste.find((e) => e.id === w.id) : null, aus = [];
     for (const e of liste) aus.push(h('div', { class: 'liste-eintrag fx-eintrag' + (e === offen ? ' an' : ''), 'data-id': e.id, onclick: () => waehle(c, 'stellen', e === offen ? null : e.id) },
-      h('span', { class: 'n' }, (STELLEN_ARTEN[e.art] || 'Stelle') + (e.spur ? ' · folgt dem Bild' : '')),
+      h('span', { class: 'n' }, (STELLEN_ARTEN[e.art] || 'Stelle') + (e.gesicht ? ' · Gesicht' : '') + (e.spur ? ' (läuft mit)' : '')),
       weg('Diese Stelle entfernen', () => { K.aendere(() => { c.stellen = c.stellen.filter((x) => x !== e); }); if (e === offen) Z.fx.wahl = null; neu(); })));
     if (offen) {
       const e = offen;
@@ -136,20 +136,33 @@ export function baueEffektTafel(K) {
         chips(Object.entries(STELLEN_ARTEN), e.art, (v) => { K.aendere(() => { e.art = v; }); neu(); }),
         e.art === 'balken' ? [h('label', { class: 'lbl' }, 'Farbe'), farbwahl(FARBEN, e.farbe || '#000000', (f, ende) => { live(() => { e.farbe = f; }); if (ende) fest(); })]
           : regler('Stärke', e.staerke ?? 60, { min: 10, max: 100, schritt: 5, zeige: prozent, std: 60 }, (v) => live(() => { e.staerke = v; }), fest),
-        e.spur ? h('p', { class: 'hinweis' }, 'Diese Stelle folgt dem Bild von selbst.') : bereichRegler(e),
-        h('div', { class: 'zeile' }, h('button', { class: 'btn klein', onclick: () => waehle(c, 'stellen', null) }, 'Fertig'))));
+        e.spur ? [h('label', { class: 'lbl' }, 'Form'), chips([['ellipse', 'Rund'], ['rechteck', 'Eckig']], e.form || 'ellipse', (v) => { K.aendere(() => { e.form = v; }); }),
+          regler('Größe', Math.round((e.gr > 0 ? e.gr : 1) * 100), { min: 50, max: 250, schritt: 5, zeige: prozent, std: 100 }, (v) => live(() => { e.gr = v / 100; }), fest),
+          h('p', { class: 'hinweis', style: { margin: '2px 0 0' } }, 'Diese Stelle läuft von selbst mit. In der Vorschau anfassen verschiebt sie als Ganzes – zum Beispiel etwas höher, damit auch die Haare bedeckt sind.')]
+          : bereichRegler(e),
+        h('div', { class: 'zeile' },
+          e.gesicht && liste.filter((x) => x.gesicht).length > 1 ? h('button', { class: 'btn klein', id: 'fxAlleGesichter', title: 'Art, Stärke, Farbe, Form und Größe auf alle Gesichter dieses Clips übertragen', onclick: () => {
+            K.aendere(() => { for (const x of c.stellen) if (x.gesicht && x !== e) { x.art = e.art; x.staerke = e.staerke; x.farbe = e.farbe; x.form = e.form; if (x.spur && e.spur) x.gr = e.gr; } }); neu(); K.sag('Auf alle Gesichter dieses Clips übertragen.'); } }, 'Für alle Gesichter') : null,
+          h('button', { class: 'btn klein', onclick: () => waehle(c, 'stellen', null) }, 'Fertig'))));
     }
     if (liste.length < STELLEN_HOECHSTENS) aus.push(h('button', { class: 'btn voll', id: 'bStelleNeu', title: 'Eine Stelle im Bild weichzeichnen, verpixeln, abdecken, hervorheben oder vergrößern', onclick: () => {
       const e = neueStelle(); K.aendere(() => { if (!Array.isArray(c.stellen)) c.stellen = []; c.stellen.push(e); }); waehle(c, 'stellen', e.id); } }, '◎ Stelle im Bild bearbeiten'));
-    if (!liste.length) aus.push(h('p', { class: 'hinweis', style: { margin: '6px 0 0' } }, 'Zum Beispiel ein Kennzeichen oder ein Gesicht unkenntlich machen – oder eine Einzelheit hervorheben.'));
+    if (K.gesichter) aus.push(h('button', { class: 'btn voll', id: 'bGesichter', style: { marginTop: '6px' }, title: 'Sucht im Clip nach Gesichtern und legt auf jedes eine Stelle, die von selbst mitläuft – ganz im Gerät, es wird nichts hochgeladen',
+      onclick: () => K.gesichter.zeig(c) }, liste.some((e) => e.gesicht) ? '☺ Gesichter neu suchen' : '☺ Gesichter finden'));
+    if (!liste.length) aus.push(h('p', { class: 'hinweis', style: { margin: '6px 0 0' } }, 'Zum Beispiel ein Kennzeichen oder ein Gesicht unkenntlich machen – oder eine Einzelheit hervorheben. „Gesichter finden“ sucht sie von selbst und läuft mit.'));
     return teil('Stellen im Bild', ...aus);
   }
   /** Die gewählte Stelle in der Vorschau anfassen. → { zieh(x, y), los() } oder null. Daneben getippt: Die Stelle springt dorthin. */
   function fasse(x, y) {
     const w = Z.fx.wahl; if (!w) return null;
     const c = Z.p.clips.find((k) => k.id === w.clip), b = c && bildVon(c), el = flaeche(); if (!b) return null;
-    const e = ((w.liste === 'umf' ? c.umf : c.stellen) || []).find((k) => k.id === w.id), d = e && (w.liste === 'umf' ? e.bereich : e); if (!d || d.spur) return null;
+    const e = ((w.liste === 'umf' ? c.umf : c.stellen) || []).find((k) => k.id === w.id), d = e && (w.liste === 'umf' ? e.bereich : e); if (!d) return null;
     const ort = (px, py) => zuQuelle(el.width, el.height, b.t, b.s, b.q, px, py), [u0, v0] = ort(x, y);
+    if (d.spur) {      // läuft mit: Das Ziehen verschiebt die ganze Spur (nur wenn die Stelle selbst angefasst wird – daneben tippen tut nichts)
+      const L = stelleBei(d, c.art === 'video' ? (b.q.zeit ?? quellZeit(b.s, b.t)) : 0); if (!(L.w > 0) || Math.abs(u0 - L.x) > L.w / 2 + 0.03 || Math.abs(v0 - L.y) > L.h / 2 + 0.03) return null;
+      const dx0 = d.dx || 0, dy0 = d.dy || 0;
+      return { zieh(px, py) { const [u, v] = ort(px, py); K.aendere(() => { d.dx = klemm(dx0 + u - u0, -0.5, 0.5); d.dy = klemm(dy0 + v - v0, -0.5, 0.5); }, false); }, los() { K.fest(); } };
+    }
     const innen = Math.abs(u0 - d.x) <= d.w / 2 + 0.03 && Math.abs(v0 - d.y) <= d.h / 2 + 0.03;
     if (!innen) K.aendere(() => { d.x = klemm(u0, 0, 1); d.y = klemm(v0, 0, 1); }, false);
     const x0 = d.x, y0 = d.y;

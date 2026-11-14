@@ -4,7 +4,7 @@
 // Geht etwas nicht (kein WebGL), liefert glBild null und das Bild bleibt unverändert.
 import { GL_FX } from './effekte.js';
 
-let gl = null, flaeche = null, prog = null, U = null, texLauf = null, texWeich = null, texKlein = null, kaputt = false, maxTex = 4096, art = '';
+let gl = null, flaeche = null, prog = null, U = null, progs = [null, null], kopf = null, texLauf = null, texWeich = null, texKlein = null, kaputt = false, maxTex = 4096, art = '';
 const feste = new Map();       // Foto → Textur (Fotos ändern sich nicht: nur einmal hochladen)
 let hilf = null, mittel = null, weich = null, klein = null;
 const neueFlaeche = (w, h) => (typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : Object.assign(document.createElement('canvas'), { width: w, height: h }));
@@ -15,7 +15,7 @@ uniform sampler2D t, tw, tk;
 uniform float seite, zeit, stufe;
 uniform float E[32];
 uniform vec3 duo;
-uniform vec4 sA[4], sB[4], sC[4];
+uniform vec4 sA[8], sB[8], sC[8];
 uniform vec4 uA[3], uB[3], uC[3], uD[3];
 const vec3 LUM = vec3(.299, .587, .114);
 float h1(vec2 p) { vec3 q = fract(vec3(p.xyx) * .1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }
@@ -27,6 +27,18 @@ vec3 weich(vec2 q, float r) {
   s += TEX(tk, q + o * .7071).rgb + TEX(tk, q - o * .7071).rgb + TEX(tk, q + o * vec2(.7071, -.7071)).rgb + TEX(tk, q - o * vec2(.7071, -.7071)).rgb;
   return s / 10.;
 }
+// Glätten: zwölf Nachbarn in drei Ringen; ein Nachbar zählt umso mehr, je ähnlicher er dem Bildpunkt ist – Haut wird ruhig, Augen und Mund bleiben stehen.
+// Steckt nur in der zweiten Fassung des Programms (GLATT): Manche Geräte rechnen jeden Zweig für jeden Bildpunkt mit – wer nicht glättet, soll dafür nicht zahlen.
+#ifdef GLATT
+void nimm(vec2 q, vec3 mitte, inout vec3 s, inout float n) { vec3 p = TEX(t, rein(q)).rgb; float w = 1. - smoothstep(.05, .17, distance(p, mitte)); s += p * w; n += w; }
+vec3 glatt(vec2 q, vec3 mitte, float r) {
+  vec2 o = vec2(r / seite, r); vec3 s = mitte; float n = 1.;
+  nimm(q + o * vec2(1., 0.), mitte, s, n); nimm(q - o * vec2(1., 0.), mitte, s, n); nimm(q + o * vec2(0., 1.), mitte, s, n); nimm(q - o * vec2(0., 1.), mitte, s, n);
+  nimm(q + o * 1.4, mitte, s, n); nimm(q - o * 1.4, mitte, s, n); nimm(q + o * vec2(1.4, -1.4), mitte, s, n); nimm(q - o * vec2(1.4, -1.4), mitte, s, n);
+  nimm(q + o * vec2(2.6, 0.), mitte, s, n); nimm(q - o * vec2(2.6, 0.), mitte, s, n); nimm(q + o * vec2(0., 2.6), mitte, s, n); nimm(q - o * vec2(0., 2.6), mitte, s, n);
+  return s / n;
+}
+#endif
 float stelle(vec2 u, vec4 a, float eckig, float kante) {
   if (a.z <= 0. || a.w <= 0.) return 0.;
   vec2 d = abs(u - a.xy) / a.zw; float r = eckig > .5 ? max(d.x, d.y) : length(d);
@@ -71,15 +83,22 @@ void main() {
     if (E[TRAUM] > 0.) c = mix(c, 1. - (1. - c) * (1. - b * .75), E[TRAUM] * .9);
     if (E[LEUCHTEN] > 0.) c = clamp(c + b * smoothstep(.6, .97, dot(b, LUM)) * E[LEUCHTEN] * .9, 0., 1.);
   }
-  // ── 5. Stellen im Bild: weichzeichnen, verpixeln, vergrößern (was danach kommt, rechnet nur noch Bildpunkt für Bildpunkt – unkenntlich bleibt unkenntlich) ──
-  vec2 lq = u, mq = u; float wm = 0., wr = 0., mm = 0., dm = 0., lm = 0.; vec3 df = vec3(0.);
-  for (int i = 0; i < 4; i++) {
-    vec4 a = sA[i], b = sB[i]; float m = stelle(u, a, b.y, b.w), kl = min(a.w, a.z * seite);
+  // ── 5. Stellen im Bild: glätten, weichzeichnen, verpixeln, vergrößern (was danach kommt, rechnet nur noch Bildpunkt für Bildpunkt – unkenntlich bleibt unkenntlich) ──
+  vec2 lq = u, mq = u; float wm = 0., wr = 0., mm = 0., dm = 0., lm = 0., gm = 0., gr = 0., dunkel = 1., hm = 0.; vec3 df = vec3(0.);
+  for (int i = 0; i < 8; i++) {
+    vec4 a = sA[i], b = sB[i]; if (b.x > 8.5) break;          // die Stellen sind lückenlos von vorn gefüllt – ab hier kommt nichts mehr
+    float m = stelle(u, a, b.y, b.w), kl = min(a.w, a.z * seite);
     if (b.x < .5) { if (m > wm) { wm = m; wr = kl * (.2 + .8 * b.z); } }
     else if (b.x < 1.5) { if (m > .5) { float z = 2. * kl / mix(14., 4., b.z); vec2 g = vec2(z / seite, z); mq = (floor((u - a.xy) / g) + .5) * g + a.xy; mm = 1.; } }
     else if (b.x < 2.5) { if (m > dm) { dm = m; df = sC[i].rgb; } }
     else if (b.x > 3.5 && b.x < 4.5 && m > 0.) { lq = mix(lq, a.xy + (u - a.xy) / (1. + b.z * 2.), m); lm = 1.; }
+    else if (b.x < 3.5) dunkel *= mix(1. - .78 * b.z, 1., m);          // hervorheben: wird erst ganz am Ende angewandt (Schritt 8)
+    else if (b.x > 4.5 && b.x < 5.5) { if (m * b.z > gm) { gm = m * b.z; gr = kl; } }
+    else if (b.x > 5.5 && b.x < 6.5) hm = max(hm, m * b.z);          // aufhellen: ebenfalls am Ende
   }
+#ifdef GLATT
+  if (gm > 0.) c = mix(c, glatt(u, c, gr * .03), gm);          // zuerst glätten – was unkenntlich gemacht wird, liegt darüber
+#endif
   if (lm > 0.) c = TEX(t, rein(lq)).rgb;
   if (mm > 0.) c = TEX(t, rein(mq)).rgb;
   if (wm > 0.) c = mix(c, weich(u, wr), wm);
@@ -126,9 +145,10 @@ void main() {
   if (E[KORN] > 0.) c += (h1(floor(v * vec2(720. * seite, 720.)) + vec2(stufe * 3.1, stufe * 1.3)) - .5) * E[KORN] * .3;
   if (E[RAUSCHEN] > 0.) c = mix(c, vec3(h1(floor(v * vec2(360. * seite, 360.)) + vec2(stufe * 2.3, stufe * 3.7))), E[RAUSCHEN] * .7);
   if (E[NEBEL] > 0.) { float n = rau(v * vec2(3. * seite, 3.) + vec2(zeit * .05, zeit * .02)) * .6 + rau(v * vec2(7. * seite, 7.) - vec2(zeit * .08, 0.)) * .4; c = mix(c, vec3(.92, .94, .96), smoothstep(.2, .9, n) * (.35 + .65 * v.y) * E[NEBEL] * .85); }
-  // ── 8. Stellen abdecken (in genau der gewählten Farbe) und hervorheben (alles außerhalb wird dunkler) ──
+  // ── 8. Stellen abdecken (in genau der gewählten Farbe), hervorheben (alles außerhalb wird dunkler) und aufhellen ──
   if (dm > 0.) c = mix(c, df, dm);
-  for (int i = 0; i < 4; i++) { vec4 b = sB[i]; if (b.x > 2.5 && b.x < 3.5) c *= mix(1. - .78 * b.z, 1., stelle(u, sA[i], b.y, b.w)); }
+  c *= dunkel;
+  if (hm > 0.) { vec3 p = max(c, 0.); c = mix(c, p * 2.2 / (1. + 1.2 * p), hm); }        // Schatten und Mitten heben, Lichter bleiben (ohne teure Potenz)
   FARBE = vec4(clamp(c, 0., 1.), 1.);
 }`;
 
@@ -147,21 +167,38 @@ function richteEin() {
       : (lod ? '#extension GL_EXT_shader_texture_lod : enable\n' : '') + `precision ${genau ? 'highp' : 'mediump'} float;\nvarying vec2 v;\n#define FARBE gl_FragColor\n#define TEX(s, q) ${lod ? 'texture2DLodEXT(s, q, 0.)' : 'texture2D(s, q)'}\n`;
     const kopfV = zwei ? '#version 300 es\nin vec2 p;\nout vec2 v;\n' : 'attribute vec2 p;\nvarying vec2 v;\n';
     const baue = (typ, quelle) => { const s = gl.createShader(typ); gl.shaderSource(s, quelle); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) || 'Programm lässt sich nicht bauen'); return s; };
-    prog = gl.createProgram();
-    gl.attachShader(prog, baue(gl.VERTEX_SHADER, kopfV + 'void main(){ v = vec2(p.x * .5 + .5, .5 - p.y * .5); gl_Position = vec4(p, 0., 1.); }'));
-    gl.attachShader(prog, baue(gl.FRAGMENT_SHADER, kopfF + namen + RUMPF));
-    gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog) || 'Programm lässt sich nicht verbinden');
-    gl.useProgram(prog);
+    kopf = { v: kopfV, f: kopfF + namen, baue };
     const puffer = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, puffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-    const ort = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(ort); gl.vertexAttribPointer(ort, 2, gl.FLOAT, false, 0, 0);
-    U = {}; for (const n of ['t', 'tw', 'tk', 'seite', 'zeit', 'stufe', 'E', 'duo', 'sA', 'sB', 'sC', 'uA', 'uB', 'uC', 'uD']) U[n] = gl.getUniformLocation(prog, n);
-    gl.uniform1i(U.t, 0); gl.uniform1i(U.tw, 1); gl.uniform1i(U.tk, 2);
+    progs = [null, null]; nimmProgramm(0);
     maxTex = Math.min(4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) || 2048);
     texLauf = neueTextur(); texWeich = neueTextur(); texKlein = neueTextur();
-    if (flaeche.addEventListener) flaeche.addEventListener('webglcontextlost', (ev) => { ev.preventDefault(); gl = null; prog = null; feste.clear(); });   // beim nächsten Bild wird neu eingerichtet
+    if (flaeche.addEventListener) flaeche.addEventListener('webglcontextlost', (ev) => { ev.preventDefault(); gl = null; prog = null; progs = [null, null]; feste.clear(); });   // beim nächsten Bild wird neu eingerichtet
     return true;
   } catch (e) { console.warn('Bildeffekte nicht möglich:', e && e.message ? e.message : e); kaputt = true; gl = null; return false; }
+}
+// Das Rechenprogramm in einer von zwei Fassungen einschalten: 0 = ohne, 1 = mit „Glätten“ (wird erst gebaut, wenn es gebraucht wird).
+function nimmProgramm(nr) {
+  let e = progs[nr];
+  if (!e && nr && progs[0]) {      // die zweite Fassung ist eine Zugabe: Lässt sie sich auf einem Gerät nicht bauen, rechnet die erste weiter (dann ohne Glätten)
+    try { e = baueProgramm(nr); } catch (f) { console.warn('Glätten nicht möglich:', f && f.message ? f.message : f); e = progs[nr] = progs[0]; }
+  } else if (!e) e = baueProgramm(nr);
+  if (prog !== e.pr) { prog = e.pr; U = e.u; gl.useProgram(prog); }
+}
+function baueProgramm(nr) {
+  let e = null;
+  {
+    const pr = gl.createProgram();
+    gl.attachShader(pr, kopf.baue(gl.VERTEX_SHADER, kopf.v + 'void main(){ v = vec2(p.x * .5 + .5, .5 - p.y * .5); gl_Position = vec4(p, 0., 1.); }'));
+    gl.attachShader(pr, kopf.baue(gl.FRAGMENT_SHADER, kopf.f + (nr ? '#define GLATT\n' : '') + RUMPF));
+    gl.bindAttribLocation(pr, 0, 'p'); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr) || 'Programm lässt sich nicht verbinden');
+    gl.useProgram(pr); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    const u = {}; for (const n of ['t', 'tw', 'tk', 'seite', 'zeit', 'stufe', 'E', 'duo', 'sA', 'sB', 'sC', 'uA', 'uB', 'uC', 'uD']) u[n] = gl.getUniformLocation(pr, n);
+    gl.uniform1i(u.t, 0); gl.uniform1i(u.tw, 1); gl.uniform1i(u.tk, 2);
+    e = progs[nr] = { pr, u };
+  }
+  prog = e.pr; U = e.u;
+  return e;
 }
 function neueTextur() {
   const x = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, x);
@@ -212,6 +249,7 @@ export function glBild(bild, w, h, zb, zh, P) {
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, texWeich); lade(weich);
       gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, texKlein); lade(klein);
     }
+    nimmProgramm(P.glatt ? 1 : 0);
     gl.uniform1f(U.seite, w / h); gl.uniform1f(U.zeit, P.zeit); gl.uniform1f(U.stufe, P.stufe); gl.uniform1fv(U.E, P.E); gl.uniform3f(U.duo, P.duo[0], P.duo[1], P.duo[2]);
     gl.uniform4fv(U.sA, P.sA); gl.uniform4fv(U.sB, P.sB); gl.uniform4fv(U.sC, P.sC);
     gl.uniform4fv(U.uA, P.uA); gl.uniform4fv(U.uB, P.uB); gl.uniform4fv(U.uC, P.uC); gl.uniform4fv(U.uD, P.uD);

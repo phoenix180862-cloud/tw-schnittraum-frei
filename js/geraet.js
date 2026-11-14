@@ -110,6 +110,24 @@ async function pruefeSprache() {
   } catch (e) { setz('sprache', T, 'nein', (e && e.message ? e.message : String(e)) + ' Der Schnittraum arbeitet ohne Untertitel weiter.', { fehler: true }); }
 }
 
+async function pruefeGesicht() {
+  const T = 'Gesichter finden (im Gerät)';
+  zeile('gesicht', T); setz('gesicht', T, '', 'Der Gesichtsfinder wird geladen (beim ersten Mal rund 15 MB) …');
+  try {
+    const { ladeGesichtsfinder, findeImBild, maleProbegesicht } = await import('./gesicht.js');
+    await ladeGesichtsfinder((a) => { zeile('gesicht', T).querySelector('small').textContent = `Der Gesichtsfinder wird geladen … ${Math.round(a * 100)} %`; });
+    // Probebild: zwei gezeichnete Gesichter (kein echter Mensch) vor Himmel und Wasser
+    const W = 1280, H = 720, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 0, H * 0.6); g.addColorStop(0, '#78BEEB'); g.addColorStop(1, '#BEDEF0'); x.fillStyle = g; x.fillRect(0, 0, W, H * 0.6); x.fillStyle = '#1E506E'; x.fillRect(0, H * 0.6, W, H * 0.4);
+    maleProbegesicht(x, W * 0.32, H * 0.44, W * 0.15); maleProbegesicht(x, W * 0.72, H * 0.46, W * 0.07, [200, 150, 120], [30, 30, 30], '#7A2222');
+    await findeImBild(c, W, H);                                   // einmal zum Warmwerden
+    const t0 = performance.now(); let r = null; for (let i = 0; i < 3; i++) r = await findeImBild(c, W, H);
+    const ms = (performance.now() - t0) / 3, n = r.funde.filter((f) => f.wert >= 0.6).length, treffer = (sx, sy) => r.funde.some((f) => Math.abs(f.x - sx) < 0.05 && Math.abs(f.y - sy) < 0.08);
+    const gut = n === 2 && treffer(0.32, 0.44) && treffer(0.72, 0.46), jeMinute = 300 * ms / 1000;
+    setz('gesicht', T, gut ? 'gut' : 'halb', (gut ? 'Ja – beide Probegesichter wurden gefunden' : `Läuft, aber im Probebild wurden ${n} statt 2 Gesichter gefunden`) + `. Tempo: ein Clip von einer Minute braucht etwa ${jeMinute < 90 ? Math.max(5, Math.round(jeMinute / 5) * 5) + ' Sekunden' : Math.round(jeMinute / 60) + ' Minuten'}.`, { gefunden: n, gut, ms: Math.round(ms) });
+  } catch (e) { setz('gesicht', T, 'nein', (e && e.message ? e.message : String(e)) + ' Stellen im Bild lassen sich trotzdem von Hand setzen.', { fehler: true }); }
+}
+
 async function starte() {
   document.documentElement.dataset.fertig = ''; $('gListe').replaceChildren(); for (const k of Object.keys(E)) delete E[k];
   $('gStand').textContent = 'Prüfung läuft …'; $('gStart').disabled = true;
@@ -122,5 +140,6 @@ async function starte() {
 
 $('gStart').onclick = starte;
 $('gSprache').onclick = async () => { $('gSprache').disabled = true; await pruefeSprache(); $('gSprache').disabled = false; document.documentElement.dataset.sprache = '1'; };
-window.TWGeraet = { E, starte, pruefeSprache, farbArt };
+$('gGesicht').onclick = async () => { $('gGesicht').disabled = true; await pruefeGesicht(); $('gGesicht').disabled = false; document.documentElement.dataset.gesicht = '1'; };
+window.TWGeraet = { E, starte, pruefeSprache, pruefeGesicht, farbArt };
 starte();

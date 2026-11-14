@@ -107,7 +107,7 @@ export function baueVorschau(canvas, hol, opt) {
     if (s.c.art === 'bild') return m.bild ? { bild: m.bild, w: m.bild.width, h: m.bild.height } : null;
     const e = vids.get(s.c.id);
     if (!e || e.el.readyState < 2 || !e.el.videoWidth) return null;
-    return { bild: e.el, w: e.el.videoWidth, h: e.el.videoHeight };
+    return { bild: e.el, w: e.el.videoWidth, h: e.el.videoHeight, zeit: e.el.currentTime };      // zeit = Stelle der Quelle, die das Bild gerade wirklich zeigt (beim Abspielen darf es dem Zeiger etwas nachlaufen) – danach richten sich mitlaufende Stellen
   }
   function male() {
     const { p, lay } = hol();

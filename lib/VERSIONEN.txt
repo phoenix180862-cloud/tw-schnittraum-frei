@@ -5,11 +5,14 @@ mediabunny-aac-encoder.min.mjs   @mediabunny/aac-encoder 1.65.2 (MPL-2.0; enthä
                                  unverändert aus npm: dist/bundles/mediabunny-aac-encoder.min.mjs
                                  – wird nur geladen, wenn der Browser selbst keinen AAC-Ton speichern kann.
 ort/ort.wasm.bundle.min.mjs      onnxruntime-web 1.31.1 (MIT, Microsoft), unverändert aus npm: dist/ort.wasm.bundle.min.mjs,
-ort/ort-wasm-simd-threaded.*     dist/ort-wasm-simd-threaded.wasm und .mjs – Rechenwerk für die Spracherkennung im Gerät;
-                                 wird nur geladen, wenn der Schalter „Automatische Untertitel“ benutzt wird.
+ort/ort-wasm-simd-threaded.*     dist/ort-wasm-simd-threaded.wasm und .mjs – Rechenwerk für die Spracherkennung und den Gesichtsfinder im Gerät;
+                                 wird nur geladen, wenn „Automatische Untertitel“ oder „Gesichter finden“ benutzt wird.
 sprache/kroko-de/*.onnx          Sprachmodell Kroko-ASR Deutsch (Community, Banafo), Fassung 2025-08-06, CC BY-SA 4.0,
                                  unverändert aus sherpa-onnx „asr-models“ (sherpa-onnx-streaming-zipformer-de-kroko-2025-08-06);
                                  modell.json = Beschreibung dazu (selbst erzeugt, siehe sprache/kroko-de/LIESMICH.txt).
+gesicht/yunet_n_dynamic.onnx     Gesichtsfinder YuNet „n“ (BSD 3-Clause, Shiqi Yu u. a.), unverändert aus github.com/ShiqiYu/libfacedetection.train
+                                 (onnx/yunet_n_dynamic.onnx, Stand dca340a vom 14.06.2026) – für „Gesichter finden“; nutzt das Rechenwerk lib/ort,
+                                 wird nur geladen, wenn „Gesichter finden“ benutzt wird. Siehe gesicht/LIESMICH.txt.
 tw-version.js                    TW-Baustein, Kanon-Kopie aus tw-business-suite/gemeinsam/ – nicht abwandeln.
 
 Lizenztexte: lib/lizenzen/ und schriften/LIZENZ-*.txt

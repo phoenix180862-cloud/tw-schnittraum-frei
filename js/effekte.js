@@ -35,10 +35,10 @@ export const RAHMEN = {
 };
 export const BEWEGUNGEN = { keine: 'Ohne', ran: 'Langsam heran', weg: 'Langsam weg', rechts: 'Schwenk nach rechts', links: 'Schwenk nach links', hoch: 'Schwenk nach oben', runter: 'Schwenk nach unten',
   schweben: 'Schweben', wackeln: 'Handkamera', puls: 'Pulsieren', ruck: 'Ruck am Anfang', drehen: 'Langsam drehen' };
-export const STELLEN_ARTEN = { unscharf: 'Weichzeichnen', mosaik: 'Verpixeln', balken: 'Abdecken', licht: 'Hervorheben', lupe: 'Vergrößern' };
+export const STELLEN_ARTEN = { unscharf: 'Weichzeichnen', mosaik: 'Verpixeln', balken: 'Abdecken', glatt: 'Glätten', hell: 'Aufhellen', licht: 'Hervorheben', lupe: 'Vergrößern' };
 export const UMF_ARTEN = { neu: 'Umfärben', behalten: 'Nur diese Farbe behalten', grau: 'Entfärben' };
-export const STELLEN_HOECHSTENS = 4, FARBEN_HOECHSTENS = 3;
-const STELLEN_CODE = { unscharf: 0, mosaik: 1, balken: 2, licht: 3, lupe: 4 }, UMF_CODE = { neu: 0, behalten: 1, grau: 2 };
+export const STELLEN_HOECHSTENS = 8, FARBEN_HOECHSTENS = 3;
+const STELLEN_CODE = { unscharf: 0, mosaik: 1, balken: 2, licht: 3, lupe: 4, glatt: 5, hell: 6 }, UMF_CODE = { neu: 0, behalten: 1, grau: 2 };
 const LEER = Object.freeze({}), KEINE = Object.freeze([]);
 
 export const neueStelle = (art = 'unscharf') => ({ id: 's' + nr(), art, form: 'ellipse', x: 0.5, y: 0.5, w: 0.3, h: 0.3, staerke: 60, farbe: '#000000' });
@@ -195,16 +195,18 @@ export function zeichneAuflagen(ctx, W, H, fx, t, rel) {
 /** Lage einer Stelle zur Quellzeit qt. Mit „spur“ ([[t, x, y, w, h], …], w = 0 = nicht zu sehen) folgt die Stelle dem Bild. */
 export function stelleBei(e, qt) {
   const sp = e.spur; if (!sp || !sp.length) return e;
+  // Eine mitlaufende Stelle lässt sich als Ganzes größer oder kleiner machen (gr) und verschieben (dx, dy) – die Spur selbst bleibt, wie sie gefunden wurde.
+  const gr = e.gr > 0 ? e.gr : 1, dx = e.dx || 0, dy = e.dy || 0;
   let i = 0; while (i < sp.length - 1 && sp[i + 1][0] <= qt) i++;
-  const a = sp[i], b = sp[i + 1], halt = (p) => ({ x: p[1], y: p[2], w: p[3], h: p[4] }), weg = { x: 0.5, y: 0.5, w: 0, h: 0 };
+  const a = sp[i], b = sp[i + 1], halt = (p) => ({ x: p[1] + dx, y: p[2] + dy, w: p[3] * gr, h: p[4] * gr }), weg = { x: 0.5, y: 0.5, w: 0, h: 0 };
   if (qt < a[0]) return a[0] - qt < 0.5 && a[3] > 0 ? halt(a) : weg;
   if (!b) return qt - a[0] < 0.5 && a[3] > 0 ? halt(a) : weg;
   if (!(a[3] > 0)) return b[3] > 0 && b[0] - qt < 0.25 ? halt(b) : weg;
   if (!(b[3] > 0)) return qt - a[0] < 0.5 ? halt(a) : weg;
   const k = (qt - a[0]) / Math.max(1e-6, b[0] - a[0]);
-  return { x: a[1] + (b[1] - a[1]) * k, y: a[2] + (b[2] - a[2]) * k, w: a[3] + (b[3] - a[3]) * k, h: a[4] + (b[4] - a[4]) * k };
+  return { x: a[1] + (b[1] - a[1]) * k + dx, y: a[2] + (b[2] - a[2]) * k + dy, w: (a[3] + (b[3] - a[3]) * k) * gr, h: (a[4] + (b[4] - a[4]) * k) * gr };
 }
-const P = { E: new Float32Array(32), sA: new Float32Array(16), sB: new Float32Array(16), sC: new Float32Array(16), uA: new Float32Array(12), uB: new Float32Array(12), uC: new Float32Array(12), uD: new Float32Array(12), duo: [0.77, 0.12, 0.12], weich: false, zeit: 0, stufe: 0 };
+const P = { E: new Float32Array(32), sA: new Float32Array(32), sB: new Float32Array(32), sC: new Float32Array(32), uA: new Float32Array(12), uB: new Float32Array(12), uC: new Float32Array(12), uD: new Float32Array(12), duo: [0.77, 0.12, 0.12], weich: false, glatt: false, zeit: 0, stufe: 0 };
 /**
  * Angaben für die Rechenstufe – oder null, wenn für diesen Clip nichts zu rechnen ist.
  * @param zus  Zusatz aus einem Übergang, z. B. { pixel: 0.6 }
@@ -213,16 +215,16 @@ const P = { E: new Float32Array(32), sA: new Float32Array(16), sB: new Float32Ar
 export function glWerte(c, zus, t, qt) {
   const fx = c.fx || LEER, st = c.stellen || KEINE, um = c.umf || KEINE;
   if (!zus && !st.length && !um.length && fx === LEER) return null;
-  let etwas = false; P.weich = false; P.E.fill(0);
+  let etwas = false; P.weich = false; P.glatt = false; P.E.fill(0);
   for (let i = 0; i < GL_FX.length; i++) { const k = GL_FX[i]; let v = fx[k] > 0 ? fx[k] / 100 : 0; if (zus && zus[k] > v) v = zus[k]; if (v > 0) { P.E[i] = Math.min(1, v); etwas = true; } }
   if (P.E[GL_FX.indexOf('leuchten')] || P.E[GL_FX.indexOf('traum')] || P.E[GL_FX.indexOf('miniatur')] || P.E[GL_FX.indexOf('weichx')]) P.weich = true;
-  P.sA.fill(0); P.sB.fill(0); P.sC.fill(0); for (let i = 0; i < 4; i++) P.sB[i * 4] = 9;
-  for (let i = 0; i < Math.min(4, st.length); i++) {
+  P.sA.fill(0); P.sB.fill(0); P.sC.fill(0); for (let i = 0; i < STELLEN_HOECHSTENS; i++) P.sB[i * 4] = 9;
+  for (let i = 0, n = 0; i < st.length && n < STELLEN_HOECHSTENS; i++) {      // lückenlos von vorn füllen – die Rechenstufe hört bei der ersten leeren Stelle auf
     const e = st[i], L = stelleBei(e, qt), code = STELLEN_CODE[e.art];
     if (code == null || !(L.w > 0.002 && L.h > 0.002)) continue;
-    const f = hexRgb(e.farbe);
-    P.sA.set([L.x, L.y, L.w / 2, L.h / 2], i * 4); P.sB.set([code, e.form === 'rechteck' ? 1 : 0, klemm((e.staerke ?? 60) / 100, 0, 1), code === 0 ? 0.3 : code === 3 ? 0.25 : code === 4 ? 0.12 : 0.03], i * 4); P.sC.set([f[0], f[1], f[2], 0], i * 4);
-    etwas = true; if (code === 0) P.weich = true;
+    const f = hexRgb(e.farbe), k = n * 4; n++;
+    P.sA.set([L.x, L.y, L.w / 2, L.h / 2], k); P.sB.set([code, e.form === 'rechteck' ? 1 : 0, klemm((e.staerke ?? 60) / 100, 0, 1), code === 0 ? 0.3 : code === 3 ? 0.25 : code === 4 ? 0.12 : code === 5 ? 0.35 : code === 6 ? 0.45 : 0.03], k); P.sC.set([f[0], f[1], f[2], 0], k);
+    etwas = true; if (code === 0) P.weich = true; if (code === 5) P.glatt = true;
   }
   P.uA.fill(0); P.uB.fill(0); P.uC.fill(0); P.uD.fill(0);
   for (let i = 0; i < Math.min(3, um.length); i++) {

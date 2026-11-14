@@ -9,6 +9,7 @@ import { baueTafeln } from './tafeln.js';
 import { baueQuellen } from './quellen-fenster.js';
 import { baueMusik } from './musik-fenster.js';
 import { baueEffektTafel } from './effekte-tafel.js';
+import { baueGesichter } from './gesicht-fenster.js';
 import * as Q from './quellen.js';
 import { starteAufnahme } from './aufnahme.js';
 import { h, chips, haken, meldung, fenster, frage } from './bausteine.js';
@@ -447,6 +448,7 @@ async function start() {
   K.quellen = baueQuellen(K);
   K.musik = baueMusik(K);              // Musik von der App: im Gerät erzeugt, gehört niemandem
   K.fx = baueEffektTafel(K);           // Effekte: Palette, Rahmen, Bewegung, Farbe ändern, Stellen im Bild
+  K.gesichter = baueGesichter(K);      // Gesichter finden: Stellen, die mit dem Gesicht mitlaufen (im Gerät)
   K.tafelNeu = () => { if (tafeln) tafeln.zeigEig(); };
   $('bStart').append(K.quellen.leiste(true));   // die direkten Wege (Ordner, Handy, Google Fotos, Google Drive) gleich auf dem leeren Startbild
   if (Q.MOBIL) $('bStart').querySelector('p').textContent = 'Aus der Galerie, den eigenen Dateien, von der SD-Karte oder frisch aufgenommen. Alles bleibt auf deinem Gerät.';

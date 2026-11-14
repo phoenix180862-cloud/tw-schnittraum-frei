@@ -1,0 +1,13 @@
+Gesichtsfinder für „Gesichter finden“ im TW Schnittraum
+========================================================
+Modell:   YuNet (Fassung „n“, bewegliche Eingangsgröße) – findet Gesichter in einem Bild.
+          Es findet nur, WO ein Gesicht ist. Es erkennt keine Personen, vergleicht keine Gesichter und merkt sich niemanden.
+Urheber:  Shiqi Yu und Mitwirkende (libfacedetection) – https://github.com/ShiqiYu/libfacedetection.train
+Bezug:    Datei onnx/yunet_n_dynamic.onnx aus dem Original-Repo, Stand dca340aa082c71081a68d17db8e58b33a58a914b (14.06.2026), unverändert.
+Prüfsumme (SHA-256): 104ee26c71d5c270ce79a6b3dced91c91013260d29a6bf18f9296c5b8c4c2b12 · 322 906 Bytes
+Lizenz:   BSD 3-Clause – Text in lib/lizenzen/YuNet-BSD-3-Clause.txt. Weitergabe erlaubt (auch in der kostenlosen Fassung und bei einem Verkauf),
+          solange Urhebervermerk und Lizenztext mitgegeben werden; der Name des Urhebers darf nicht für Werbung benutzt werden.
+Eingang:  „input“ [1, 3, Höhe, Breite], Farben in der Folge Blau–Grün–Rot, Werte 0 … 255, beide Seiten durch 32 teilbar.
+Ausgang:  je Rasterweite 8, 16 und 32: cls_*, obj_* (Sicherheit), bbox_* (Lage und Größe), kps_* (fünf Punkte im Gesicht – ungenutzt).
+          Auswertung in js/gesicht-kern.js; gegengeprüft gegen die Auswertung von OpenCV (FaceDetectorYN) – gleiche Zahlen.
+Das Modell läuft vollständig im Gerät (onnxruntime-web, lib/ort). Es wird kein Bild hochgeladen.

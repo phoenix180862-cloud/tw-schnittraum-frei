@@ -169,7 +169,7 @@ function maleClip(ctx, W, H, t, s, q, zus, opt, rahmen) {
   const c = s.c, grundAlpha = ctx.globalAlpha, a = c.farbe || {}, rel = t - s.t0;
   const L = lage(W, H, t, s, q), R = L.R, nativ = kannFiltern(ctx);
   // Bildeffekte: Die Rechenstufe liefert das veränderte Bild in der Form des Quellbilds – höchstens so groß, wie es gezeigt wird.
-  const P = glWerte(c, zus, t, c.art === 'video' ? quellZeit(s, t) : rel);
+  const P = glWerte(c, zus, t, c.art === 'video' ? (q.zeit ?? quellZeit(s, t)) : rel);      // mitlaufende Stellen richten sich nach dem Bild, das wirklich zu sehen ist
   const kl = Math.min(1, L.m), bild = (P && glBild(q.bild, q.w, q.h, q.w * kl, q.h * kl, P)) || q.bild;
   const male = (massstab, filter, mitte, b = bild) => {
     ctx.save();
@@ -234,14 +234,14 @@ function maleClip(ctx, W, H, t, s, q, zus, opt, rahmen) {
 
 // Die gewählte Stelle (oder der Bereich einer Farbänderung) wird in der Vorschau gestrichelt umrandet – so lässt sie sich anfassen und verschieben.
 function zeichneStelle(ctx, W, H, t, s, q, wahl) {
-  const c = s.c, e = ((wahl.liste === 'umf' ? c.umf : c.stellen) || []).find((x) => x.id === wahl.id), d = e && (wahl.liste === 'umf' ? e.bereich : stelleBei(e, c.art === 'video' ? quellZeit(s, t) : 0));
+  const c = s.c, e = ((wahl.liste === 'umf' ? c.umf : c.stellen) || []).find((x) => x.id === wahl.id), d = e && (wahl.liste === 'umf' ? e.bereich : stelleBei(e, c.art === 'video' ? (q.zeit ?? quellZeit(s, t)) : 0));
   if (!d || !(d.w > 0)) return;
   const L = lage(W, H, t, s, q), R = L.R;
   ctx.save();
   if (R.kipp) { ctx.translate(W / 2, H / 2); ctx.rotate(R.kipp); ctx.translate(-W / 2, -H / 2); }
   ctx.translate(R.x + L.cx, R.y + L.cy); ctx.rotate(L.w); ctx.scale(L.sx * L.m, L.m);
   const x = (d.x - 0.5) * q.w, y = (d.y - 0.5) * q.h, b = d.w * q.w, h = d.h * q.h, strich = Math.max(1.5, W * 0.0026) / L.m;
-  ctx.beginPath(); if (d.form === 'rechteck') ctx.rect(x - b / 2, y - h / 2, b, h); else ctx.ellipse(x, y, b / 2, h / 2, 0, 0, 6.2832);
+  ctx.beginPath(); if ((wahl.liste === 'umf' ? d.form : e.form) === 'rechteck') ctx.rect(x - b / 2, y - h / 2, b, h); else ctx.ellipse(x, y, b / 2, h / 2, 0, 0, 6.2832);
   ctx.globalAlpha = 1; ctx.lineWidth = strich * 2.2; ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.stroke();
   ctx.setLineDash([strich * 5, strich * 4]); ctx.lineWidth = strich; ctx.strokeStyle = '#facc15'; ctx.stroke();
   ctx.restore();

@@ -20,7 +20,7 @@ Fest eingebundene Bibliotheken (keine fremden Server im Betrieb):
    Oswald, Source Sans 3, Montserrat, Bebas Neue, Playfair Display, Dancing Script
    Lizenztexte: schriften/LIZENZ-*.txt
 
-4. onnxruntime-web 1.31.1 – Rechenwerk für die Spracherkennung im Gerät (automatische Untertitel)
+4. onnxruntime-web 1.31.1 – Rechenwerk für die Spracherkennung (automatische Untertitel) und den Gesichtsfinder im Gerät
    © Microsoft Corporation · MIT-Lizenz · https://onnxruntime.ai
    Dateien: lib/ort/ (unverändert) · Lizenztext: lib/lizenzen/onnxruntime-MIT.txt
 
@@ -30,6 +30,11 @@ Fest eingebundene Bibliotheken (keine fremden Server im Betrieb):
    Dateien: lib/sprache/kroko-de/ (Modelldateien unverändert) · Hinweise: lib/sprache/kroko-de/LIESMICH.txt
    Das Modell läuft vollständig im Gerät; es wird kein Ton hochgeladen.
 
-6. tw-version.js – eigener Baustein der TW-Apps: zeigt die Version und meldet, wenn es eine neue Fassung gibt.
+6. Gesichtsfinder YuNet (Fassung „n“) – findet für „Gesichter finden“, wo im Bild ein Gesicht ist (er erkennt keine Personen)
+   © 2022–2026 Shiqi Yu und Mitwirkende · BSD 3-Clause · https://github.com/ShiqiYu/libfacedetection.train
+   Datei: lib/gesicht/yunet_n_dynamic.onnx (unverändert) · Lizenztext: lib/lizenzen/YuNet-BSD-3-Clause.txt · Hinweise: lib/gesicht/LIESMICH.txt
+   Das Modell läuft vollständig im Gerät; es wird kein Bild hochgeladen.
+
+7. tw-version.js – eigener Baustein der TW-Apps: zeigt die Version und meldet, wenn es eine neue Fassung gibt.
 
 Das Firmenlogo „Thomas Willwacher Fliesenlegermeister e.K.“ ist kein freier Baustein und darf nicht weiterverwendet werden.
